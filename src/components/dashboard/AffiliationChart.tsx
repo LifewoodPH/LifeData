@@ -30,7 +30,24 @@ export default function AffiliationChart({ data }: AffiliationChartProps) {
 
     return (
         <div className="glass-card rounded-2xl p-6">
-            <h3 className="text-base font-bold text-gray-700 mb-4">Users by Affiliation</h3>
+            <h3 className="text-base font-bold text-gray-700 mb-3">Users by Affiliation</h3>
+            {/* Totals Summary */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 max-h-[40px] overflow-hidden hover:max-h-[200px] transition-all">
+                {chartData.map((entry, index) => (
+                    <div key={entry.type} className="flex items-center gap-1.5">
+                        <div
+                            className="w-2.5 h-2.5 rounded-full"
+                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        />
+                        <span className="text-xs font-semibold text-gray-600">
+                            {entry.type}:
+                        </span>
+                        <span className="text-xs font-bold" style={{ color: COLORS[index % COLORS.length] }}>
+                            {entry.count.toLocaleString()}
+                        </span>
+                    </div>
+                ))}
+            </div>
             <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />

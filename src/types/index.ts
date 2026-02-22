@@ -44,6 +44,7 @@ export interface Analytics {
     byGender: Record<string, number>;
     byAffiliation: Record<string, number>;
     byStatus: Record<string, number>;
+    byAge: Record<string, number>;
     joinedByMonth: { month: string; count: number }[];
 }
 

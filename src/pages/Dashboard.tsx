@@ -4,6 +4,8 @@ import Sidebar from '../components/layout/Sidebar';
 import Header from '../components/layout/Header';
 import StatCard from '../components/dashboard/StatCard';
 import AffiliationChart from '../components/dashboard/AffiliationChart';
+import GenderChart from '../components/dashboard/GenderChart';
+import AgeChart from '../components/dashboard/AgeChart';
 import PeopleNamesTable from '../components/dashboard/PeopleNamesTable';
 
 export default function Dashboard() {
@@ -31,7 +33,7 @@ export default function Dashboard() {
             return (
                 <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
-                        <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4" />
+                        <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4" />
                         <p className="text-gray-500 font-medium">Loading analytics…</p>
                     </div>
                 </div>
@@ -51,7 +53,7 @@ export default function Dashboard() {
                         <p className="text-gray-500 text-sm mb-4">{error}</p>
                         <button
                             onClick={fetchData}
-                            className="px-6 py-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white rounded-xl font-medium hover:shadow-md transition"
+                            className="px-6 py-2 bg-gradient-to-r from-emerald-600 to-teal-800 text-white rounded-xl font-medium hover:shadow-md transition"
                         >
                             Try Again
                         </button>
@@ -69,7 +71,7 @@ export default function Dashboard() {
                     <StatCard
                         label="Total Users"
                         value={analytics.total}
-                        color="indigo"
+                        color="emerald"
                         icon={
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -79,35 +81,54 @@ export default function Dashboard() {
                 </div>
 
                 {/* Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <AffiliationChart data={analytics.byAffiliation} />
+                    <GenderChart data={analytics.byGender} />
+                    <AgeChart data={analytics.byAge} />
                 </div>
 
                 {/* People Names Table */}
-                <PeopleNamesTable data={filteredData} />
+                <PeopleNamesTable
+                    data={filteredData}
+                    search={filters.search}
+                    onSearchChange={(val) => updateFilter('search', val)}
+                />
             </div>
         );
     };
 
-    const tabTitles: Record<string, { title: string; subtitle: string }> = {
-        dashboard: { title: 'Dashboard Overview', subtitle: 'Analytics and insights from PH_Masterlist' },
+    const tabTitles: Record<string, { title: string; subtitle?: string }> = {
+        dashboard: { title: 'BYU x Lifewood PH Overview' },
         analytics: { title: 'Analytics', subtitle: 'Deep-dive into your PH data' },
         users: { title: 'Users', subtitle: 'View all members in PH_Masterlist' },
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100 flex">
-            <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <div className="min-h-screen bg-gradient-to-br from-slate-100 via-emerald-50 to-teal-100 flex relative overflow-hidden">
+            {/* Ambient Video Background */}
+            <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none mix-blend-overlay filter grayscale"
+            >
+                <source src="https://www.pexels.com/download/video/10922866/" type="video/mp4" />
+            </video>
 
-            <div className="flex-1 flex flex-col p-6 min-w-0">
+            {/* Sidebar Container */}
+            <div className="relative z-10">
+                <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+            </div>
+
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col p-6 min-w-0 relative z-10 h-screen overflow-hidden">
                 <Header
                     title={tabTitles[activeTab]?.title ?? 'Dashboard'}
                     subtitle={tabTitles[activeTab]?.subtitle}
                     lastUpdated={lastUpdated}
                     onRefresh={fetchData}
                     loading={loading}
-                    search={filters.search}
-                    onSearchChange={(val) => updateFilter('search', val)}
                 />
 
                 {renderContent()}
