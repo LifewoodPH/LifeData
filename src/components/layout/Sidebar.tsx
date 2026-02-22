@@ -46,6 +46,17 @@ const navItems: NavItem[] = [
         ),
         label: 'Nigeria',
     },
+    {
+        id: 'drc',
+        icon: (
+            <img
+                src="https://flagcdn.com/w40/cd.png"
+                alt="DRC"
+                className="w-5 h-auto rounded-[2px] shadow-sm"
+            />
+        ),
+        label: 'DRC',
+    },
 ];
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {

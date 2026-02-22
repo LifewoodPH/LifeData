@@ -102,9 +102,10 @@ export default function Dashboard() {
     };
 
     const tabTitles: Record<string, { title: string; subtitle?: string }> = {
-        dashboard: { title: 'BYU x Lifewood PH Overview' },
-        analytics: { title: 'Analytics', subtitle: 'Deep-dive into your PH data' },
-        users: { title: 'Users', subtitle: 'View all members in PH_Masterlist' },
+        dashboard: { title: 'BYU x Lifewood PH Overview', subtitle: 'View all members in PH Masterlist' },
+        analytics: { title: 'BYU x Lifewood Fiji Overview', subtitle: 'View all members in Fiji Masterlist' },
+        users: { title: 'BYU x Lifewood NG Overview', subtitle: 'View all members in NG Masterlist' },
+        drc: { title: 'BYU x Lifewood DRC Overview', subtitle: 'View all members in DRC Masterlist' },
     };
 
     return (
