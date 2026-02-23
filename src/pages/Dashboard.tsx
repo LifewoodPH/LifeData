@@ -106,6 +106,14 @@ export default function Dashboard() {
         analytics: { title: 'BYU x Lifewood Fiji Overview', subtitle: 'View all members in Fiji Masterlist' },
         users: { title: 'BYU x Lifewood NG Overview', subtitle: 'View all members in NG Masterlist' },
         drc: { title: 'BYU x Lifewood DRC Overview', subtitle: 'View all members in DRC Masterlist' },
+        ghana: { title: 'BYU x Lifewood Ghana Overview', subtitle: 'View all members in Ghana Masterlist' },
+        madagascar: { title: 'BYU x Lifewood Madagascar Overview', subtitle: 'View all members in Madagascar Masterlist' },
+        malawi: { title: 'BYU x Lifewood Malawi Overview', subtitle: 'View all members in Malawi Masterlist' },
+        southafrica: { title: 'BYU x Lifewood South Africa Overview', subtitle: 'View all members in South Africa Masterlist' },
+        tonga: { title: 'BYU x Lifewood Tonga Overview', subtitle: 'View all members in Tonga Masterlist' },
+        uganda: { title: 'BYU x Lifewood Uganda Overview', subtitle: 'View all members in Uganda Masterlist' },
+        p100: { title: 'Lifewood P100 Overview', subtitle: 'View all members in P100 Masterlist' },
+        roc: { title: 'BYU x Lifewood Republic of the Congo Overview', subtitle: 'View all members in Republic of the Congo Masterlist' },
     };
 
     return (

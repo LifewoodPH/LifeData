@@ -57,6 +57,92 @@ const navItems: NavItem[] = [
         ),
         label: 'DRC',
     },
+    {
+        id: 'ghana',
+        icon: (
+            <img
+                src="https://flagcdn.com/w40/gh.png"
+                alt="Ghana"
+                className="w-5 h-auto rounded-[2px] shadow-sm"
+            />
+        ),
+        label: 'Ghana',
+    },
+    {
+        id: 'madagascar',
+        icon: (
+            <img
+                src="https://flagcdn.com/w40/mg.png"
+                alt="Madagascar"
+                className="w-5 h-auto rounded-[2px] shadow-sm"
+            />
+        ),
+        label: 'Madagascar',
+    },
+    {
+        id: 'malawi',
+        icon: (
+            <img
+                src="https://flagcdn.com/w40/mw.png"
+                alt="Malawi"
+                className="w-5 h-auto rounded-[2px] shadow-sm"
+            />
+        ),
+        label: 'Malawi',
+    },
+    {
+        id: 'southafrica',
+        icon: (
+            <img
+                src="https://flagcdn.com/w40/za.png"
+                alt="South Africa"
+                className="w-5 h-auto rounded-[2px] shadow-sm"
+            />
+        ),
+        label: 'South Africa',
+    },
+    {
+        id: 'tonga',
+        icon: (
+            <img
+                src="https://flagcdn.com/w40/to.png"
+                alt="Tonga"
+                className="w-5 h-auto rounded-[2px] shadow-sm"
+            />
+        ),
+        label: 'Tonga',
+    },
+    {
+        id: 'uganda',
+        icon: (
+            <img
+                src="https://flagcdn.com/w40/ug.png"
+                alt="Uganda"
+                className="w-5 h-auto rounded-[2px] shadow-sm"
+            />
+        ),
+        label: 'Uganda',
+    },
+    {
+        id: 'p100',
+        icon: (
+            <span className="w-auto min-w-[1.4rem] h-5 px-1 flex items-center justify-center text-[11px] font-bold bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-[4px] shadow-sm leading-none tracking-tight">
+                P100
+            </span>
+        ),
+        label: 'P100',
+    },
+    {
+        id: 'roc',
+        icon: (
+            <img
+                src="https://flagcdn.com/w40/cg.png"
+                alt="Republic of the Congo"
+                className="w-5 h-auto rounded-[2px] shadow-sm"
+            />
+        ),
+        label: 'R. Congo',
+    },
 ];
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
