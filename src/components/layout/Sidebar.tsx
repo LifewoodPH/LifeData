@@ -161,11 +161,11 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         <aside className="sidebar-glass flex flex-col h-full w-64 min-w-[16rem] p-6">
             {/* Logo / Brand */}
             <div className="flex items-center gap-3 mb-10">
-                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md p-1 overflow-hidden">
+                <div className="w-12 h-12 flex items-center justify-center">
                     <img
-                        src="/logof.jpeg"
+                        src="/logo1.jpeg"
                         alt="LifeData"
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-contain mix-blend-multiply filter drop-shadow-sm"
                         onError={(e) => {
                             (e.currentTarget as HTMLImageElement).style.display = 'none';
                             (e.currentTarget.nextElementSibling as HTMLElement)!.style.display = 'flex';
