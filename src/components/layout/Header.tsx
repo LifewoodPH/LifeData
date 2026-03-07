@@ -17,11 +17,16 @@ export default function Header({
         date.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
 
     return (
-        <header className="glass-card rounded-2xl px-6 py-4 flex items-center mb-6">
+        <header className="glass-card rounded-2xl px-6 py-4 flex items-center mb-6 relative">
             {/* Title */}
             <div className="flex-1">
                 <h2 className="text-xl font-bold text-gray-800">{title}</h2>
                 {subtitle && <p className="text-sm text-gray-400">{subtitle}</p>}
+            </div>
+
+            {/* Center Logo */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center pointer-events-none">
+                <img src="/logof.jpeg" alt="Logo" className="h-10 w-auto object-contain mix-blend-multiply" />
             </div>
 
             {/* Right Side Actions */}
