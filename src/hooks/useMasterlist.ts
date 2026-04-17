@@ -83,7 +83,10 @@ export function useMasterlist(activeTab: string = 'dashboard') {
         try {
             const { data, error: err } = await supabase.functions.invoke('get-masterlist', {
                 method: 'POST',
-                body: { country: activeTab }
+                body: { 
+                    country: activeTab,
+                    path: activeTab.includes('/') || activeTab.endsWith('.csv') ? activeTab : null
+                }
             });
             if (err) {
                 let detailedMsg = err.message;

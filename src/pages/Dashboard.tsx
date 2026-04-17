@@ -115,10 +115,28 @@ export default function Dashboard() {
         roc: { title: 'BYU x Lifewood Republic of the Congo Overview', subtitle: 'View all members in Republic of the Congo Masterlist' },
     };
 
+    const getMetadata = () => {
+        if (tabTitles[activeTab]) return tabTitles[activeTab];
+        
+        // Dynamic titles for uploaded files
+        if (activeTab.includes('/') || activeTab.endsWith('.csv')) {
+            const fileName = activeTab.split('/').pop() || activeTab;
+            const baseName = fileName.replace(/\.csv$/, '').replace(/\(\w+\)$/, '').trim();
+            return {
+                title: `${baseName} Overview`,
+                subtitle: `Analytics for ${fileName}`
+            };
+        }
+        
+        return { title: 'Dashboard', subtitle: '' };
+    };
+
+    const metadata = getMetadata();
+
     return (
         <AppLayout
-            title={tabTitles[activeTab]?.title ?? 'Dashboard'}
-            subtitle={tabTitles[activeTab]?.subtitle}
+            title={metadata.title}
+            subtitle={metadata.subtitle}
             lastUpdated={lastUpdated}
             onRefresh={fetchData}
             loading={loading}
