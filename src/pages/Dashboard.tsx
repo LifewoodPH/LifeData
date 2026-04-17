@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useMasterlist } from '../hooks/useMasterlist';
-import Sidebar from '../components/layout/Sidebar';
-import Header from '../components/layout/Header';
+import AppLayout from '../components/layout/AppLayout';
 import StatCard from '../components/dashboard/StatCard';
 import AffiliationChart from '../components/dashboard/AffiliationChart';
 import GenderChart from '../components/dashboard/GenderChart';
@@ -27,8 +26,6 @@ export default function Dashboard() {
         statuses,
         allData,
     } = useMasterlist(activeTab);
-
-    const uniqueCountries = analytics ? Object.keys(analytics.byCountry).length : 0;
 
     const renderContent = () => {
         if (loading) {
@@ -119,35 +116,16 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-100 via-emerald-50 to-teal-100 flex relative overflow-hidden">
-            {/* Ambient Video Background */}
-            <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none mix-blend-overlay filter grayscale"
-            >
-                <source src="https://www.pexels.com/download/video/10922866/" type="video/mp4" />
-            </video>
-
-            {/* Sidebar Container */}
-            <div className="relative z-10">
-                <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-            </div>
-
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col p-6 min-w-0 relative z-10 h-screen overflow-hidden">
-                <Header
-                    title={tabTitles[activeTab]?.title ?? 'Dashboard'}
-                    subtitle={tabTitles[activeTab]?.subtitle}
-                    lastUpdated={lastUpdated}
-                    onRefresh={fetchData}
-                    loading={loading}
-                />
-
-                {activeTab === 'overview' ? <OverviewContent /> : renderContent()}
-            </div>
-        </div>
+        <AppLayout
+            title={tabTitles[activeTab]?.title ?? 'Dashboard'}
+            subtitle={tabTitles[activeTab]?.subtitle}
+            lastUpdated={lastUpdated}
+            onRefresh={fetchData}
+            loading={loading}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+        >
+            {activeTab === 'overview' ? <OverviewContent /> : renderContent()}
+        </AppLayout>
     );
 }
