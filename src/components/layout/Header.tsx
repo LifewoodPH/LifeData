@@ -1,17 +1,17 @@
 interface HeaderProps {
     title: string;
     subtitle?: string;
-    lastUpdated: Date | null;
-    onRefresh: () => void;
-    loading: boolean;
+    lastUpdated?: Date | null;
+    onRefresh?: () => void;
+    loading?: boolean;
 }
 
 export default function Header({
     title,
     subtitle,
-    lastUpdated,
-    onRefresh,
-    loading,
+    lastUpdated = null,
+    onRefresh = () => { },
+    loading = false,
 }: HeaderProps) {
     const formatTime = (date: Date) =>
         date.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });

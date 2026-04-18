@@ -160,6 +160,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         'crowdsource-int': []
     });
     const [loading, setLoading] = React.useState(true);
+    const [openFolders, setOpenFolders] = React.useState<Record<string, boolean>>({});
 
     const getIconForFile = (name: string) => {
         const lowerName = name.toLowerCase();
