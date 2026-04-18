@@ -8,6 +8,11 @@ interface PeopleNamesTableProps {
 }
 
 export default function PeopleNamesTable({ data, search, onSearchChange, fullView = false }: PeopleNamesTableProps) {
+    // Extract dynamic headers from raw_data if available
+    const dynamicHeaders = fullView && data.length > 0 && data[0].raw_data 
+        ? Object.keys(data[0].raw_data)
+        : [];
+
     return (
         <div className="glass-card rounded-2xl overflow-hidden flex flex-col h-full">
             {/* Header */}
@@ -42,27 +47,32 @@ export default function PeopleNamesTable({ data, search, onSearchChange, fullVie
             </div>
 
             {/* Scrollable table body */}
-            <div className="overflow-y-auto flex-1">
-                <table className="w-full text-sm">
-                    <thead className="sticky top-0 z-10">
-                        <tr className="bg-white/60 backdrop-blur-sm border-b border-white/40">
-                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">#</th>
-                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
-                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
-                            {fullView && (
-                                <>
-                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Gender</th>
-                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Age</th>
-                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Affiliation</th>
-                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Number</th>
-                                </>
+            <div className="overflow-auto flex-1">
+                <table 
+                    className="w-full text-sm"
+                    style={{ minWidth: fullView ? `${Math.max(1200, dynamicHeaders.length * 160)}px` : 'auto' }}
+                >
+                    <thead className="sticky top-0 z-50">
+                        <tr className="bg-white border-b border-gray-200">
+                            <th className="sticky left-0 z-50 bg-white border-r border-gray-100 text-left px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest w-12">#</th>
+                            <th className="sticky left-12 z-50 bg-white border-r-2 border-emerald-50 text-left px-4 py-3 text-xs font-semibold text-emerald-800 uppercase tracking-wider min-w-[220px] shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)]">
+                                Locked Name
+                            </th>
+                            {!fullView ? (
+                                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                            ) : (
+                                dynamicHeaders.map(header => (
+                                    <th key={header} className="text-left px-6 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap bg-gray-50/30">
+                                        {header}
+                                    </th>
+                                ))
                             )}
                         </tr>
                     </thead>
                     <tbody>
                         {data.length === 0 ? (
                             <tr>
-                                <td colSpan={fullView ? 7 : 3} className="px-4 py-12 text-center text-gray-400 text-sm">
+                                <td colSpan={fullView ? dynamicHeaders.length + 2 : 3} className="px-4 py-12 text-center text-gray-400 text-sm">
                                     No people found
                                 </td>
                             </tr>
@@ -74,39 +84,27 @@ export default function PeopleNamesTable({ data, search, onSearchChange, fullVie
                                 return (
                                     <tr
                                         key={entry.id}
-                                        className={`border-b border-white/30 hover:bg-emerald-50/40 transition-colors ${idx % 2 === 0 ? '' : 'bg-white/10'}`}
+                                        className={`border-b border-gray-100 hover:bg-emerald-50/30 transition-colors group ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/20'}`}
                                     >
-                                        <td className="px-4 py-3 text-gray-400 text-xs font-mono">{idx + 1}</td>
-                                        <td className="px-4 py-3">
+                                        <td className={`sticky left-0 z-20 border-r border-gray-100 px-4 py-3 text-gray-400 text-[10px] font-mono ${idx % 2 === 0 ? 'bg-white' : 'bg-[#fcfdfd]'}`}>{idx + 1}</td>
+                                        <td className={`sticky left-12 z-20 border-r-2 border-emerald-50 px-4 py-3 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#fcfdfd]'}`}>
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500/80 to-teal-600/80 flex items-center justify-center text-white text-[10px] font-bold shrink-0 shadow-sm">
                                                     {initials}
                                                 </div>
-                                                <span className="font-medium text-gray-800">{fullName}</span>
+                                                <span className="font-semibold text-gray-700 whitespace-nowrap text-sm tracking-tight">{fullName}</span>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3 text-gray-600 text-sm">
-                                            {entry.email || '—'}
-                                        </td>
-                                        {fullView && (
-                                            <>
-                                                <td className="px-4 py-3">
-                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                                                        entry.gender === 'Female' ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600'
-                                                    }`}>
-                                                        {entry.gender}
-                                                    </span>
+                                        {!fullView ? (
+                                            <td className="px-4 py-3 text-gray-600 text-sm">
+                                                {entry.email || '—'}
+                                            </td>
+                                        ) : (
+                                            dynamicHeaders.map(header => (
+                                                <td key={header} className="px-6 py-3 text-gray-500 text-xs font-medium whitespace-nowrap">
+                                                    {String(entry.raw_data?.[header] || '—')}
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-600 font-mono text-xs">
-                                                    {entry.age || '—'}
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-600 text-xs">
-                                                    {entry.affiliation_type || '—'}
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-500 font-mono text-[11px]">
-                                                    {entry.contact_number || '—'}
-                                                </td>
-                                            </>
+                                            ))
                                         )}
                                     </tr>
                                 );

@@ -34,6 +34,7 @@ export interface MasterlistEntry {
     remarks: string | null;
     active_status: string | null;
     created_at: string | null;
+    raw_data?: Record<string, any>;
 }
 
 export interface Analytics {
