@@ -78,6 +78,10 @@ export function useMasterlist(activeTab: string = 'dashboard') {
     const [statuses, setStatuses] = useState<string[]>([]);
 
     const fetchData = useCallback(async () => {
+        if (!activeTab || activeTab === 'Root') {
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         setError(null);
         try {

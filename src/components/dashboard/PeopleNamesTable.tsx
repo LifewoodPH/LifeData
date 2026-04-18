@@ -4,11 +4,12 @@ interface PeopleNamesTableProps {
     data: MasterlistEntry[];
     search: string;
     onSearchChange: (val: string) => void;
+    fullView?: boolean;
 }
 
-export default function PeopleNamesTable({ data, search, onSearchChange }: PeopleNamesTableProps) {
+export default function PeopleNamesTable({ data, search, onSearchChange, fullView = false }: PeopleNamesTableProps) {
     return (
-        <div className="glass-card rounded-2xl overflow-hidden flex flex-col" style={{ maxHeight: '420px' }}>
+        <div className="glass-card rounded-2xl overflow-hidden flex flex-col h-full">
             {/* Header */}
             <div className="px-6 py-4 border-b border-white/40 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2">
@@ -48,12 +49,20 @@ export default function PeopleNamesTable({ data, search, onSearchChange }: Peopl
                             <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">#</th>
                             <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
                             <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                            {fullView && (
+                                <>
+                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Gender</th>
+                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Age</th>
+                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Affiliation</th>
+                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Number</th>
+                                </>
+                            )}
                         </tr>
                     </thead>
                     <tbody>
                         {data.length === 0 ? (
                             <tr>
-                                <td colSpan={3} className="px-4 py-12 text-center text-gray-400 text-sm">
+                                <td colSpan={fullView ? 7 : 3} className="px-4 py-12 text-center text-gray-400 text-sm">
                                     No people found
                                 </td>
                             </tr>
@@ -79,6 +88,26 @@ export default function PeopleNamesTable({ data, search, onSearchChange }: Peopl
                                         <td className="px-4 py-3 text-gray-600 text-sm">
                                             {entry.email || '—'}
                                         </td>
+                                        {fullView && (
+                                            <>
+                                                <td className="px-4 py-3">
+                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                                                        entry.gender === 'Female' ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600'
+                                                    }`}>
+                                                        {entry.gender}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-600 font-mono text-xs">
+                                                    {entry.age || '—'}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-600 text-xs">
+                                                    {entry.affiliation_type || '—'}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-500 font-mono text-[11px]">
+                                                    {entry.contact_number || '—'}
+                                                </td>
+                                            </>
+                                        )}
                                     </tr>
                                 );
                             })

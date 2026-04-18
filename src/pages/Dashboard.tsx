@@ -10,7 +10,7 @@ import MaritalStatusWidget from '../components/dashboard/MaritalStatusWidget';
 import OverviewContent from '../components/dashboard/OverviewContent';
 
 export default function Dashboard() {
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState('byu-overview');
     const {
         filteredData,
         analytics,
@@ -100,6 +100,7 @@ export default function Dashboard() {
     };
 
     const tabTitles: Record<string, { title: string; subtitle?: string }> = {
+        'byu-overview': { title: 'BYU Project Overview', subtitle: 'Summary of all files in the BYU folder' },
         overview: { title: 'Lifewood Global Overview', subtitle: 'Total users across all countries' },
         dashboard: { title: 'BYU x Lifewood PH Overview', subtitle: 'View all members in PH Masterlist' },
         analytics: { title: 'BYU x Lifewood Fiji Overview', subtitle: 'View all members in Fiji Masterlist' },
@@ -143,7 +144,7 @@ export default function Dashboard() {
             activeTab={activeTab}
             onTabChange={setActiveTab}
         >
-            {activeTab === 'overview' ? <OverviewContent /> : renderContent()}
+            {activeTab === 'byu-overview' ? <OverviewContent folder="BYU" /> : activeTab === 'overview' ? <OverviewContent /> : renderContent()}
         </AppLayout>
     );
 }

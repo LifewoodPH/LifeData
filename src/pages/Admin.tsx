@@ -3,6 +3,7 @@ import AppLayout from '../components/layout/AppLayout';
 import { supabase } from '../lib/supabase';
 import { Upload, File as FileIcon, Trash2, CheckCircle2, AlertCircle, Loader2, Folder, ChevronRight, HardDrive } from 'lucide-react';
 import ConfirmationModal from '../components/admin/ConfirmationModal';
+import DataPreviewModal from '../components/admin/DataPreviewModal';
 
 interface StorageFile {
     name: string;
@@ -27,6 +28,11 @@ export default function Admin() {
     
     // Modal state
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; file: StorageFile | null }>({
+        isOpen: false,
+        file: null
+    });
+
+    const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; file: StorageFile | null }>({
         isOpen: false,
         file: null
     });
@@ -226,31 +232,42 @@ export default function Admin() {
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {folderFiles.map((file) => (
-                                            <div 
-                                                key={file.id} 
-                                                className="group relative bg-white border border-gray-100 rounded-2xl p-4 hover:shadow-lg hover:border-emerald-200 transition-all duration-300"
-                                            >
-                                                <div className="flex items-start justify-between">
-                                                    <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center mb-3">
-                                                        <FileIcon className="w-5 h-5 text-emerald-600" />
+                                        {folderFiles.map((file) => {
+                                            const filePath = file.folder && file.folder !== 'Root' ? `${file.folder}/${file.name}` : file.name;
+                                            return (
+                                                <div 
+                                                    key={file.id} 
+                                                    onClick={() => setPreviewModal({ isOpen: true, file })}
+                                                    className="group relative bg-white border border-gray-100 rounded-2xl p-4 hover:shadow-lg hover:border-emerald-200 transition-all duration-300 cursor-pointer active:scale-95"
+                                                >
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center mb-3 group-hover:bg-emerald-100 transition-colors">
+                                                            <FileIcon className="w-5 h-5 text-emerald-600" />
+                                                        </div>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setDeleteModal({ isOpen: true, file });
+                                                            }}
+                                                            className="p-2 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                                                            title="Delete File"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
                                                     </div>
-                                                    <button
-                                                        onClick={() => setDeleteModal({ isOpen: true, file })}
-                                                        className="p-2 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
-                                                        title="Delete File"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
+                                                    <h4 className="text-sm font-semibold text-gray-800 truncate mb-1" title={file.name}>
+                                                        {file.name}
+                                                    </h4>
+                                                    <p className="text-[10px] text-gray-400">
+                                                        Updated {new Date(file.updated_at).toLocaleDateString()}
+                                                    </p>
+                                                    <div className="mt-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-tighter">Click to Preview Data</span>
+                                                        <ChevronRight className="w-3 h-3 text-emerald-400" />
+                                                    </div>
                                                 </div>
-                                                <h4 className="text-sm font-semibold text-gray-800 truncate mb-1" title={file.name}>
-                                                    {file.name}
-                                                </h4>
-                                                <p className="text-[10px] text-gray-400">
-                                                    Updated {new Date(file.updated_at).toLocaleDateString()}
-                                                </p>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             ))}
@@ -275,6 +292,17 @@ export default function Admin() {
                 message={`Are you sure you want to permanently delete "${deleteModal.file?.name}"? This action cannot be undone and may affect the dashboard analytics.`}
                 confirmText="Permanently Delete"
             />
+            {/* Data Preview Modal */}
+            {previewModal.isOpen && (
+                <DataPreviewModal
+                    isOpen={previewModal.isOpen}
+                    onClose={() => setPreviewModal({ isOpen: false, file: null })}
+                    filePath={previewModal.file?.folder && previewModal.file?.folder !== 'Root' 
+                        ? `${previewModal.file.folder}/${previewModal.file.name}` 
+                        : (previewModal.file?.name || '')}
+                    fileName={previewModal.file?.name || ''}
+                />
+            )}
         </AppLayout>
     );
 }

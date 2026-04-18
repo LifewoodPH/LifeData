@@ -11,6 +11,7 @@ import {
     Cell,
     LabelList,
 } from 'recharts';
+import { extractFileInfo, getFlagEmoji } from '../../utils/fileMetadata';
 
 interface CountryData {
     country: string;
@@ -18,20 +19,9 @@ interface CountryData {
     flag: string;
 }
 
-const COUNTRY_TABS = [
-    { id: 'dashboard', label: 'Philippines', flag: '🇵🇭' },
-    { id: 'analytics', label: 'Fiji', flag: '🇫🇯' },
-    { id: 'users', label: 'Nigeria', flag: '🇳🇬' },
-    { id: 'drc', label: 'DRC', flag: '🇨🇩' },
-    { id: 'ghana', label: 'Ghana', flag: '🇬🇭' },
-    { id: 'madagascar', label: 'Madagascar', flag: '🇲🇬' },
-    { id: 'malawi', label: 'Malawi', flag: '🇲🇼' },
-    { id: 'southafrica', label: 'South Africa', flag: '🇿🇦' },
-    { id: 'tonga', label: 'Tonga', flag: '🇹🇴' },
-    { id: 'uganda', label: 'Uganda', flag: '🇺🇬' },
-    { id: 'p100', label: 'P100', flag: '🏅' },
-    { id: 'roc', label: 'R. Congo', flag: '🇨🇬' },
-];
+interface OverviewContentProps {
+    folder?: string;
+}
 
 const BAR_COLORS = [
     '#059669', '#0d9488', '#0891b2', '#0284c7', '#4f46e5',
@@ -39,36 +29,123 @@ const BAR_COLORS = [
     '#65a30d', '#16a34a',
 ];
 
-export default function OverviewContent() {
+export default function OverviewContent({ folder }: OverviewContentProps) {
     const [data, setData] = useState<CountryData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [totalUsers, setTotalUsers] = useState(0);
 
     useEffect(() => {
-        async function fetchAllCountries() {
+        async function fetchOverviewData() {
             setLoading(true);
             setError(null);
             try {
+                let itemsToFetch: { id: string; label: string; flag: string; path?: string }[] = [];
+
+                if (folder) {
+                    // Specific Folder View (e.g., BYU, Crowdsource PH)
+                    const isBYU = folder.toLowerCase() === 'byu';
+                    
+                    // 1. Fetch items in the specific folder
+                    const { data: folderData } = await supabase.storage.from('Data').list(folder, { sortBy: { column: 'name', order: 'asc' } });
+                    if (folderData) {
+                        folderData.filter(f => f.id && f.name.endsWith('.csv')).forEach(f => {
+                            const fullPath = `${folder}/${f.name}`;
+                            itemsToFetch.push({
+                                id: fullPath,
+                                label: extractFileInfo(f.name).label,
+                                flag: getFlagEmoji(f.name),
+                                path: fullPath
+                            });
+                        });
+                    }
+
+                    // 2. For BYU, also include root files (legacy convention)
+                    if (isBYU) {
+                        const { data: rootData } = await supabase.storage.from('Data').list('', { sortBy: { column: 'name', order: 'asc' } });
+                        if (rootData) {
+                            rootData.filter(f => f.id && f.name.endsWith('.csv')).forEach(f => {
+                                // Only add if not already present
+                                if (!itemsToFetch.some(i => i.label === extractFileInfo(f.name).label)) {
+                                    itemsToFetch.push({
+                                        id: f.name,
+                                        label: extractFileInfo(f.name).label,
+                                        flag: getFlagEmoji(f.name),
+                                        path: f.name
+                                    });
+                                }
+                            });
+                        }
+                    }
+                } else {
+                    // GLOBAL OVERVIEW - Aggregates everything from all folders + root
+                    const { data: rootItems } = await supabase.storage.from('Data').list('', { sortBy: { column: 'name', order: 'asc' } });
+                    
+                    if (rootItems) {
+                        // All root files
+                        rootItems.filter(f => f.id && f.name.endsWith('.csv')).forEach(f => {
+                            itemsToFetch.push({
+                                id: f.name,
+                                label: extractFileInfo(f.name).label,
+                                flag: getFlagEmoji(f.name),
+                                path: f.name
+                            });
+                        });
+
+                        // All files in subfolders
+                        const storageFolders = rootItems.filter(f => !f.id && f.name !== '.emptyFolderPlaceholder');
+                        for (const subFolder of storageFolders) {
+                            const { data: folderFiles } = await supabase.storage.from('Data').list(subFolder.name, { sortBy: { column: 'name', order: 'asc' } });
+                            if (folderFiles) {
+                                folderFiles.filter(f => f.id && f.name.endsWith('.csv')).forEach(f => {
+                                    const fullPath = `${subFolder.name}/${f.name}`;
+                                    // Avoid duplicates by label
+                                    if (!itemsToFetch.some(i => i.label === extractFileInfo(f.name).label)) {
+                                        itemsToFetch.push({
+                                            id: fullPath,
+                                            label: extractFileInfo(f.name).label,
+                                            flag: getFlagEmoji(f.name),
+                                            path: fullPath
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
+                if (itemsToFetch.length === 0) {
+                    setData([]);
+                    setTotalUsers(0);
+                    setLoading(false);
+                    return;
+                }
+
+                // Sorting alphabetically for consistent chart layout
+                itemsToFetch.sort((a, b) => a.label.localeCompare(b.label));
+
                 const results = await Promise.all(
-                    COUNTRY_TABS.map(async (tab) => {
+                    itemsToFetch.map(async (item) => {
                         try {
                             const { data, error } = await supabase.functions.invoke('get-masterlist', {
                                 method: 'POST',
-                                body: { country: tab.id },
+                                body: { 
+                                    country: item.id,
+                                    path: item.path || null
+                                },
                             });
-                            if (error) return { country: tab.label, users: 0, flag: tab.flag };
+                            if (error) return { country: item.label, users: 0, flag: item.flag };
                             const users = data?.users || [];
-                            return { country: tab.label, users: users.length, flag: tab.flag };
+                            return { country: item.label, users: users.length, flag: item.flag };
                         } catch {
-                            return { country: tab.label, users: 0, flag: tab.flag };
+                            return { country: item.label, users: 0, flag: item.flag };
                         }
                     })
                 );
 
-                const sorted = results.sort((a, b) => b.users - a.users);
-                setData(sorted);
-                setTotalUsers(sorted.reduce((sum, c) => sum + c.users, 0));
+                const sortedByCount = [...results].sort((a, b) => b.users - a.users);
+                setData(sortedByCount);
+                setTotalUsers(results.reduce((sum, c) => sum + c.users, 0));
             } catch (e: unknown) {
                 setError(e instanceof Error ? e.message : 'Failed to fetch overview data');
             } finally {
@@ -76,8 +153,8 @@ export default function OverviewContent() {
             }
         }
 
-        fetchAllCountries();
-    }, []);
+        fetchOverviewData();
+    }, [folder]);
 
     if (loading) {
         return (
@@ -85,7 +162,7 @@ export default function OverviewContent() {
                 <div className="text-center">
                     <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4" />
                     <p className="text-gray-500 font-medium">Loading overview data…</p>
-                    <p className="text-gray-400 text-sm mt-1">Fetching data from all countries</p>
+                    <p className="text-gray-400 text-sm mt-1">Aggregating records from all masterlists</p>
                 </div>
             </div>
         );
@@ -109,43 +186,41 @@ export default function OverviewContent() {
 
     return (
         <div className="flex-1 overflow-y-auto space-y-6 pb-6">
-            {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full -translate-y-6 translate-x-6" />
                     <div className="relative">
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Total Users</p>
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Total Active Users</p>
                         <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-700 bg-clip-text text-transparent">
                             {totalUsers.toLocaleString()}
                         </p>
-                        <p className="text-xs text-gray-400 mt-1">Across all countries</p>
+                        <p className="text-xs text-gray-400 mt-1">{folder ? `In ${folder} project` : 'Across Lifewood Global'}</p>
                     </div>
                 </div>
 
                 <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full -translate-y-6 translate-x-6" />
                     <div className="relative">
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Countries</p>
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Total Regions</p>
                         <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
                             {data.filter(d => d.users > 0).length}
                         </p>
-                        <p className="text-xs text-gray-400 mt-1">Active regions</p>
+                        <p className="text-xs text-gray-400 mt-1">Active data sources</p>
                     </div>
                 </div>
             </div>
 
-            {/* Bar Chart */}
             <div className="glass-card rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h3 className="text-lg font-bold text-gray-800">Total Users by Country</h3>
-                        <p className="text-sm text-gray-400 mt-0.5">Overview of all registered users across all countries</p>
+                        <h3 className="text-lg font-bold text-gray-800">{folder ? `${folder} Project Overview` : 'Lifewood Global Overview'}</h3>
+                        <p className="text-sm text-gray-400 mt-0.5">{folder ? `Summary of all files in the ${folder} project` : 'Aggregated overview of all registered users'}</p>
                     </div>
-                    <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                    <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm border border-emerald-100/50">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
-                        {data.length} Countries
+                        {data.length} Masterlists
                     </div>
                 </div>
 
@@ -165,13 +240,13 @@ export default function OverviewContent() {
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
                         <XAxis
                             dataKey="country"
-                            tick={{ fontSize: 12, fill: '#6b7280', fontWeight: 500 }}
+                            tick={{ fontSize: 11, fill: '#6b7280', fontWeight: 600 }}
                             axisLine={{ stroke: '#d1d5db' }}
                             tickLine={false}
                             interval={0}
                             angle={-25}
                             textAnchor="end"
-                            height={60}
+                            height={70}
                         />
                         <YAxis
                             tick={{ fontSize: 11, fill: '#9ca3af' }}
@@ -188,8 +263,8 @@ export default function OverviewContent() {
                                 padding: '12px 16px',
                             }}
                             labelStyle={{ fontWeight: 700, color: '#1f2937', fontSize: 14 }}
-                            formatter={(value: number | string | undefined) => [`${Number(value ?? 0).toLocaleString()} users`, 'Total']}
-                            cursor={{ fill: 'rgba(16, 185, 129, 0.06)' }}
+                            formatter={(value: number | string | undefined) => [`${Number(value ?? 0).toLocaleString()} users`, 'Count']}
+                            cursor={{ fill: 'rgba(16, 185, 129, 0.04)' }}
                         />
                         <Bar
                             dataKey="users"
@@ -200,7 +275,7 @@ export default function OverviewContent() {
                             <LabelList
                                 dataKey="users"
                                 position="top"
-                                style={{ fontSize: 11, fontWeight: 600, fill: '#374151' }}
+                                style={{ fontSize: 10, fontWeight: 700, fill: '#4b5563' }}
                                 formatter={(value: any) => Number(value ?? 0).toLocaleString()}
                             />
                             {data.map((_entry, index) => (
@@ -214,24 +289,23 @@ export default function OverviewContent() {
                 </ResponsiveContainer>
             </div>
 
-            {/* Country Breakdown Table */}
             <div className="glass-card rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">Country Breakdown</h3>
+                <h3 className="text-lg font-bold text-gray-800 mb-4">Detailed Breakdown</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {data.map((item, index) => (
                         <div
                             key={item.country}
-                            className="flex items-center justify-between p-4 rounded-xl bg-white/60 hover:bg-white/90 border border-gray-100 hover:border-emerald-200 transition-all duration-200 hover:shadow-sm"
+                            className="flex items-center justify-between p-4 rounded-xl bg-white/60 hover:bg-white/90 border border-gray-100 hover:border-emerald-200 transition-all duration-200 hover:shadow-sm group"
                         >
                             <div className="flex items-center gap-3">
-                                <span className="text-lg font-bold text-gray-300 w-6">
-                                    {index + 1}
+                                <span className="text-xs font-bold text-gray-300 w-5 group-hover:text-emerald-400 transition-colors">
+                                    {String(index + 1).padStart(2, '0')}
                                 </span>
-                                <span className="text-xl">{item.flag}</span>
+                                <span className="text-xl filter drop-shadow-sm">{item.flag}</span>
                                 <span className="text-sm font-semibold text-gray-700">{item.country}</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-bold text-gray-800">{item.users.toLocaleString()}</span>
+                            <div className="flex flex-col items-end">
+                                <span className="text-sm font-bold text-gray-800 leading-none">{item.users.toLocaleString()}</span>
                                 <span className="text-[10px] text-gray-400 font-medium">users</span>
                             </div>
                         </div>

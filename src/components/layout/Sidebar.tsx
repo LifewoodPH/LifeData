@@ -2,6 +2,7 @@ import React from 'react';
 import { supabase } from '../../lib/supabase';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Shield, ChevronDown, LogOut } from 'lucide-react';
+import { extractFileInfo, getFileIcon } from '../../utils/fileMetadata';
 
 interface NavItem {
     id: string;
@@ -22,283 +23,114 @@ interface SidebarProps {
     onTabChange: (tab: string) => void;
 }
 
-const topLevelItems: NavItem[] = [
-    {
-        id: 'overview',
-        icon: <LayoutDashboard className="w-5 h-5" />,
-        label: 'Overview',
-        path: '/'
-    },
-];
-
-const folders: NavFolder[] = [
-    {
-        id: 'byu',
-        label: 'BYU',
-        icon: (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.625-12.125L5.625 9.75M12 18.75V21m-2.25-2.25h4.5m-4.5 0l-1.5 1.5m6-1.5l1.5 1.5m-14.25-12h17.25c.621 0 1.125.504 1.125 1.125v12c0 .621-.504 1.125-1.125 1.125H3.375a1.125 1.125 0 01-1.125-1.125v-12c0-.621.504-1.125 1.125-1.125z" />
-            </svg>
-        ),
-        items: [
-            {
-                id: 'dashboard',
-                icon: (
-                    <img src="https://flagcdn.com/w40/ph.png" alt="Philippines" className="w-5 h-auto rounded-[2px] shadow-sm" />
-                ),
-                label: 'Philippines',
-            },
-            {
-                id: 'analytics',
-                icon: (
-                    <img src="https://flagcdn.com/w40/fj.png" alt="Fiji" className="w-5 h-auto rounded-[2px] shadow-sm" />
-                ),
-                label: 'Fiji',
-            },
-            {
-                id: 'users',
-                icon: (
-                    <img src="https://flagcdn.com/w40/ng.png" alt="Nigeria" className="w-5 h-auto rounded-[2px] shadow-sm" />
-                ),
-                label: 'Nigeria',
-            },
-            {
-                id: 'drc',
-                icon: (
-                    <img src="https://flagcdn.com/w40/cd.png" alt="DRC" className="w-5 h-auto rounded-[2px] shadow-sm" />
-                ),
-                label: 'DRC',
-            },
-            {
-                id: 'ghana',
-                icon: (
-                    <img src="https://flagcdn.com/w40/gh.png" alt="Ghana" className="w-5 h-auto rounded-[2px] shadow-sm" />
-                ),
-                label: 'Ghana',
-            },
-            {
-                id: 'madagascar',
-                icon: (
-                    <img src="https://flagcdn.com/w40/mg.png" alt="Madagascar" className="w-5 h-auto rounded-[2px] shadow-sm" />
-                ),
-                label: 'Madagascar',
-            },
-            {
-                id: 'malawi',
-                icon: (
-                    <img src="https://flagcdn.com/w40/mw.png" alt="Malawi" className="w-5 h-auto rounded-[2px] shadow-sm" />
-                ),
-                label: 'Malawi',
-            },
-            {
-                id: 'southafrica',
-                icon: (
-                    <img src="https://flagcdn.com/w40/za.png" alt="South Africa" className="w-5 h-auto rounded-[2px] shadow-sm" />
-                ),
-                label: 'South Africa',
-            },
-            {
-                id: 'tonga',
-                icon: (
-                    <img src="https://flagcdn.com/w40/to.png" alt="Tonga" className="w-5 h-auto rounded-[2px] shadow-sm" />
-                ),
-                label: 'Tonga',
-            },
-            {
-                id: 'uganda',
-                icon: (
-                    <img src="https://flagcdn.com/w40/ug.png" alt="Uganda" className="w-5 h-auto rounded-[2px] shadow-sm" />
-                ),
-                label: 'Uganda',
-            },
-            {
-                id: 'roc',
-                icon: (
-                    <img src="https://flagcdn.com/w40/cg.png" alt="Republic of the Congo" className="w-5 h-auto rounded-[2px] shadow-sm" />
-                ),
-                label: 'R. Congo',
-            },
-            {
-                id: 'p100',
-                icon: (
-                    <span className="w-auto min-w-[1.4rem] h-5 px-1 flex items-center justify-center text-[11px] font-bold bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-[4px] shadow-sm leading-none tracking-tight">
-                        P100
-                    </span>
-                ),
-                label: 'P100',
-            },
-        ],
-    },
-    {
-        id: 'crowdsource-ph',
-        label: 'Crowdsource Philippines',
-        icon: (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-            </svg>
-        ),
-        items: [],
-    },
-    {
-        id: 'crowdsource-int',
-        label: 'Crowdsource International',
-        icon: (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
-            </svg>
-        ),
-        items: [],
-    },
-];
+const topLevelItems: NavItem[] = [];
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     const location = useLocation();
     const navigate = useNavigate();
-    const [storageItems, setStorageItems] = React.useState<Record<string, NavItem[]>>({
-        byu: [],
-        'crowdsource-ph': [],
-        'crowdsource-int': []
-    });
     const [loading, setLoading] = React.useState(true);
     const [openFolders, setOpenFolders] = React.useState<Record<string, boolean>>({});
-
-    const getIconForFile = (name: string) => {
-        const lowerName = name.toLowerCase();
-        if (lowerName.includes('philippines')) return <img src="https://flagcdn.com/w40/ph.png" alt="PH" className="w-5 h-auto rounded-[2px] shadow-sm" />;
-        if (lowerName.includes('fiji')) return <img src="https://flagcdn.com/w40/fj.png" alt="FJ" className="w-5 h-auto rounded-[2px] shadow-sm" />;
-        if (lowerName.includes('nigeria')) return <img src="https://flagcdn.com/w40/ng.png" alt="NG" className="w-5 h-auto rounded-[2px] shadow-sm" />;
-        if (lowerName.includes('congo') && lowerName.includes('democratic')) return <img src="https://flagcdn.com/w40/cd.png" alt="DRC" className="w-5 h-auto rounded-[2px] shadow-sm" />;
-        if (lowerName.includes('ghana')) return <img src="https://flagcdn.com/w40/gh.png" alt="GH" className="w-5 h-auto rounded-[2px] shadow-sm" />;
-        if (lowerName.includes('madagascar')) return <img src="https://flagcdn.com/w40/mg.png" alt="MG" className="w-5 h-auto rounded-[2px] shadow-sm" />;
-        if (lowerName.includes('malawi')) return <img src="https://flagcdn.com/w40/mw.png" alt="MW" className="w-5 h-auto rounded-[2px] shadow-sm" />;
-        if (lowerName.includes('south africa')) return <img src="https://flagcdn.com/w40/za.png" alt="ZA" className="w-5 h-auto rounded-[2px] shadow-sm" />;
-        if (lowerName.includes('tonga')) return <img src="https://flagcdn.com/w40/to.png" alt="TO" className="w-5 h-auto rounded-[2px] shadow-sm" />;
-        if (lowerName.includes('uganda')) return <img src="https://flagcdn.com/w40/ug.png" alt="UG" className="w-5 h-auto rounded-[2px] shadow-sm" />;
-        if (lowerName.includes('republic of the congo')) return <img src="https://flagcdn.com/w40/cg.png" alt="ROC" className="w-5 h-auto rounded-[2px] shadow-sm" />;
-        if (lowerName.includes('p100')) {
-            return (
-                <span className="w-auto min-w-[1.4rem] h-5 px-1 flex items-center justify-center text-[11px] font-bold bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-[4px] shadow-sm leading-none tracking-tight">
-                    P100
-                </span>
-            );
-        }
-        return <LayoutDashboard className="w-4 h-4 text-emerald-600" />;
-    };
-
-    const getLabelForFile = (name: string) => {
-        const lowerName = name.toLowerCase();
-        if (lowerName.includes('philippines')) return 'Philippines';
-        if (lowerName.includes('fiji')) return 'Fiji';
-        if (lowerName.includes('nigeria')) return 'Nigeria';
-        if (lowerName.includes('congo') && lowerName.includes('democratic')) return 'DRC';
-        if (lowerName.includes('ghana')) return 'Ghana';
-        if (lowerName.includes('madagascar')) return 'Madagascar';
-        if (lowerName.includes('malawi')) return 'Malawi';
-        if (lowerName.includes('south africa')) return 'South Africa';
-        if (lowerName.includes('tonga')) return 'Tonga';
-        if (lowerName.includes('uganda')) return 'Uganda';
-        if (lowerName.includes('republic of the congo')) return 'R. Congo';
-        if (lowerName.includes('p100')) return 'P100';
-        
-        // Custom label for other files: filename without extension
-        return name.split('.').slice(0, -1).join('.') || name;
-    };
+    const [dynamicFolders, setDynamicFolders] = React.useState<NavFolder[]>([]);
 
     const fetchFiles = React.useCallback(async () => {
         setLoading(true);
-        const categories = {
-            byu: [] as NavItem[],
-            'crowdsource-ph': [] as NavItem[],
-            'crowdsource-int': [] as NavItem[]
+        const categories: Record<string, NavItem[]> = {
+            'byu': [],
+            'crowdsource-ph': [],
+            'crowdsource-int': []
         };
+        
+        try {
+            // 1. Fetch root items to discover folders and root files
+            const { data: rootItems } = await supabase.storage.from('Data').list('', { sortBy: { column: 'name', order: 'asc' } });
+            
+            if (rootItems) {
+                // Root files go to "BYU" by convention
+                const rootFiles = rootItems.filter(f => f.id && f.name.endsWith('.csv'));
+                if (rootFiles.length > 0) {
+                    categories['byu'] = rootFiles.map(f => ({
+                        id: f.name,
+                        icon: getFileIcon(f.name),
+                        label: extractFileInfo(f.name).label
+                    }));
+                }
 
-        // 1. Fetch root files (legacy BYU)
-        const { data: rootData } = await supabase.storage.from('Data').list('', { sortBy: { column: 'name', order: 'asc' } });
-        if (rootData) {
-            rootData.filter(f => f.id && f.name.endsWith('.csv')).forEach(f => {
-                categories.byu.push({
-                    id: f.name,
-                    icon: getIconForFile(f.name),
-                    label: getLabelForFile(f.name)
-                });
-            });
-        }
-
-        // 2. Fetch from specific folders
-        const folderMapping = {
-            'BYU': 'byu',
-            'Crowdsource Philippines': 'crowdsource-ph',
-            'Crowdsource International': 'crowdsource-int'
-        };
-
-        for (const [storageFolder, catId] of Object.entries(folderMapping)) {
-            const { data: folderData } = await supabase.storage.from('Data').list(storageFolder, { sortBy: { column: 'name', order: 'asc' } });
-            if (folderData) {
-                folderData.filter(f => f.id && f.name.endsWith('.csv')).forEach(f => {
-                    const fullPath = `${storageFolder}/${f.name}`;
-                    // Avoid duplicates if already in root (unlikely but safe)
-                    if (!categories[catId as keyof typeof categories].some(item => item.id === fullPath)) {
-                        categories[catId as keyof typeof categories].push({
-                            id: fullPath,
-                            icon: getIconForFile(f.name),
-                            label: getLabelForFile(f.name)
-                        });
+                // Discover other folders in the root
+                const storageFolders = rootItems.filter(f => !f.id && f.name !== '.emptyFolderPlaceholder');
+                
+                for (const folder of storageFolders) {
+                    const folderId = folder.name.toLowerCase().replace(/\s+/g, '-');
+                    const { data: folderFiles } = await supabase.storage.from('Data').list(folder.name, { sortBy: { column: 'name', order: 'asc' } });
+                    
+                    if (folderFiles) {
+                        categories[folderId] = folderFiles
+                            .filter(f => f.id && f.name.endsWith('.csv'))
+                            .map(f => ({
+                                id: `${folder.name}/${f.name}`,
+                                icon: getFileIcon(f.name),
+                                label: extractFileInfo(f.name).label
+                            }));
                     }
-                });
+                }
             }
-        }
 
-        setStorageItems(categories);
-        setLoading(false);
+            // Construct dynamic NavFolder objects
+            const newFolders: NavFolder[] = Object.keys(categories).map(id => {
+                // Determine label: "byu" -> "BYU", or kebab-case -> Capitalized
+                let label = id === 'byu' ? 'BYU' : id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                
+                // Keep specific formatting for Crowdsource
+                if (label === 'Crowdsource Ph') label = 'Crowdsource Philippines';
+                if (label === 'Crowdsource Int') label = 'Crowdsource International';
+
+                let icon = <LayoutDashboard className="w-5 h-5 text-gray-400" />;
+                
+                if (id === 'byu') {
+                    icon = (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.625-12.125L5.625 9.75M12 18.75V21m-2.25-2.25h4.5m-4.5 0l-1.5 1.5m6-1.5l1.5 1.5m-14.25-12h17.25c.621 0 1.125.504 1.125 1.125v12c0 .621-.504 1.125-1.125 1.125H3.375a1.125 1.125 0 01-1.125-1.125v-12c0-.621.504-1.125 1.125-1.125z" />
+                        </svg>
+                    );
+                } else if (id.includes('philippines')) {
+                    icon = (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                        </svg>
+                    );
+                } else {
+                    icon = (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                        </svg>
+                    );
+                }
+
+                // Sort items in category by label
+                const items = [...categories[id]].sort((a, b) => a.label.localeCompare(b.label));
+
+                // Special case: Add "Overview" to BYU
+                const finalItems = id === 'byu' 
+                    ? [{ id: 'byu-overview', icon: <LayoutDashboard className="w-5 h-5 text-emerald-600" />, label: 'BYU Overview' }, ...items]
+                    : items;
+
+                return { id, label, icon, items: finalItems };
+            });
+
+            setDynamicFolders(newFolders);
+        } catch (err) {
+            console.error('Error fetching sidebar files:', err);
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
     React.useEffect(() => {
         fetchFiles();
     }, [fetchFiles]);
 
-    const activeFolders = [
-        {
-            id: 'byu',
-            label: 'BYU',
-            icon: (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.625-12.125L5.625 9.75M12 18.75V21m-2.25-2.25h4.5m-4.5 0l-1.5 1.5m6-1.5l1.5 1.5m-14.25-12h17.25c.621 0 1.125.504 1.125 1.125v12c0 .621-.504 1.125-1.125 1.125H3.375a1.125 1.125 0 01-1.125-1.125v-12c0-.621.504-1.125 1.125-1.125z" />
-                </svg>
-            ),
-            items: storageItems.byu,
-        },
-        {
-            id: 'crowdsource-ph',
-            label: 'Crowdsource Philippines',
-            icon: (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                </svg>
-            ),
-            items: storageItems['crowdsource-ph'],
-        },
-        {
-            id: 'crowdsource-int',
-            label: 'Crowdsource International',
-            icon: (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
-                </svg>
-            ),
-            items: storageItems['crowdsource-int'],
-        },
-    ];
-
+    const activeFolders = dynamicFolders;
     const isAdminRoute = location.pathname === '/admin';
 
-    // Automatically open folder if a child is active
-    React.useEffect(() => {
-        activeFolders.forEach(folder => {
-            if (folder.items.some(item => item.id === activeTab)) {
-                setOpenFolders(prev => ({ ...prev, [folder.id]: true }));
-            }
-        });
-    }, [activeTab, storageItems]);
 
     const toggleFolder = (folderId: string) => {
         setOpenFolders(prev => ({
@@ -371,20 +203,22 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                         <div key={folder.id} className="space-y-1">
                             <button
                                 onClick={() => toggleFolder(folder.id)}
-                                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                                className={`w-full flex items-start justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
                                     hasActiveChild 
                                     ? 'text-emerald-700 bg-emerald-50/50' 
                                     : 'text-gray-600 hover:bg-white/60'
                                 }`}
                             >
-                                <div className="flex items-center gap-3">
-                                    <span className={hasActiveChild ? 'text-emerald-600' : 'text-gray-400'}>
+                                <div className="flex items-start gap-3">
+                                    <span className={`flex-shrink-0 mt-0.5 ${hasActiveChild ? 'text-emerald-600' : 'text-gray-400'}`}>
                                         {folder.icon}
                                     </span>
-                                    {folder.label}
+                                    <span className="text-left leading-tight pt-0.5">
+                                        {folder.label}
+                                    </span>
                                 </div>
                                 <ChevronDown 
-                                    className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+                                    className={`w-4 h-4 flex-shrink-0 mt-1 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
                                 />
                             </button>
 
