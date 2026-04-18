@@ -34,11 +34,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
     const fetchFiles = React.useCallback(async () => {
         setLoading(true);
-        const categories: Record<string, NavItem[]> = {
-            'byu': [],
-            'crowdsource-ph': [],
-            'crowdsource-int': []
-        };
+        const categories: Record<string, NavItem[]> = {};
         
         try {
             // 1. Fetch root items to discover folders and root files
@@ -46,7 +42,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             
             if (rootItems) {
                 // Root files go to "BYU" by convention
-                const rootFiles = rootItems.filter(f => f.id && f.name.endsWith('.csv'));
+                const rootFiles = rootItems.filter(f => f.id && (f.name.endsWith('.csv') || f.name.endsWith('.xlsx') || f.name.endsWith('.xls')));
                 if (rootFiles.length > 0) {
                     categories['byu'] = rootFiles.map(f => ({
                         id: f.name,
@@ -59,29 +55,45 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 const storageFolders = rootItems.filter(f => !f.id && f.name !== '.emptyFolderPlaceholder');
                 
                 for (const folder of storageFolders) {
-                    const folderId = folder.name.toLowerCase().replace(/\s+/g, '-');
                     const { data: folderFiles } = await supabase.storage.from('Data').list(folder.name, { sortBy: { column: 'name', order: 'asc' } });
                     
-                    if (folderFiles) {
-                        categories[folderId] = folderFiles
-                            .filter(f => f.id && f.name.endsWith('.csv'))
-                            .map(f => ({
+                    if (folderFiles && folderFiles.length > 0) {
+                        // Filter for supported spreadsheet types
+                        const validFiles = folderFiles.filter(f => f.id && (f.name.endsWith('.csv') || f.name.endsWith('.xlsx') || f.name.endsWith('.xls')));
+                        
+                        if (validFiles.length > 0) {
+                            // Normalize the key to prevent duplicates (e.g., Crowdsource Philippines folder vs hardcoded Ph)
+                            let folderId = folder.name.toLowerCase().replace(/\s+/g, '-');
+                            // Alias common variations to standard IDs
+                            if (folderId.includes('philippines') || folderId === 'crowdsource-ph') folderId = 'crowdsource-philippines';
+                            if (folderId.includes('international') || folderId === 'crowdsource-int') folderId = 'crowdsource-international';
+                            
+                            const mappedItems = validFiles.map(f => ({
                                 id: `${folder.name}/${f.name}`,
                                 icon: getFileIcon(f.name),
                                 label: extractFileInfo(f.name).label
                             }));
+
+                            // Merge if ID already exists
+                            if (categories[folderId]) {
+                                categories[folderId] = [...categories[folderId], ...mappedItems];
+                            } else {
+                                categories[folderId] = mappedItems;
+                            }
+                        }
                     }
                 }
             }
 
             // Construct dynamic NavFolder objects
             const newFolders: NavFolder[] = Object.keys(categories).map(id => {
-                // Determine label: "byu" -> "BYU", or kebab-case -> Capitalized
-                let label = id === 'byu' ? 'BYU' : id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                // Determine label
+                let label = id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
                 
-                // Keep specific formatting for Crowdsource
-                if (label === 'Crowdsource Ph') label = 'Crowdsource Philippines';
-                if (label === 'Crowdsource Int') label = 'Crowdsource International';
+                // Specific branding overrides
+                if (id === 'byu') label = 'BYU';
+                if (id.includes('philippines')) label = 'Crowdsource Philippines';
+                if (id.includes('international')) label = 'Crowdsource International';
 
                 let icon = <LayoutDashboard className="w-5 h-5 text-gray-400" />;
                 

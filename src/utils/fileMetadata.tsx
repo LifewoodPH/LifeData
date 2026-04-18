@@ -37,7 +37,7 @@ const COUNTRY_MAP: Record<string, string> = {
  * Pattern: "Lifewood x [Project] [Country] Masterlist..."
  */
 export const extractFileInfo = (filename: string) => {
-    const cleanName = filename.replace(/\.csv$/i, '');
+    const cleanName = filename.replace(/\.(csv|xlsx|xls)$/i, '');
     
     // Attempt to extract the core name using various known patterns
     // 1. "Lifewood x BYU [Country] Masterlist ..."
