@@ -81,7 +81,15 @@ export default function Admin() {
         if (error) {
             setStatus({ type: 'error', message: `Upload failed: ${error.message}` });
         } else {
-            setStatus({ type: 'success', message: `File uploaded to ${selectedFolder} successfully!` });
+            setStatus({ type: 'success', message: `Uploaded! Ingesting data...` });
+            supabase.functions.invoke('ingest-masterlist', { body: { path: filePath } })
+                .then(({ error: ingestError }) => {
+                    if (ingestError) {
+                        setStatus({ type: 'error', message: `Upload succeeded but ingestion failed: ${ingestError.message}` });
+                    } else {
+                        setStatus({ type: 'success', message: `File uploaded and ingested into ${selectedFolder} successfully!` });
+                    }
+                });
             fetchFiles();
         }
         setUploading(false);
@@ -98,6 +106,8 @@ export default function Admin() {
         if (error) {
             alert(`Error deleting file: ${error.message}`);
         } else {
+            await supabase.from('masterlist_entries').delete().eq('source_file', path);
+            await supabase.from('masterlist_files').delete().eq('storage_path', path);
             fetchFiles();
         }
     };

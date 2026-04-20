@@ -2,67 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Analytics, Filters, MasterlistEntry } from '../types';
 
-const GENDER_PLACEHOLDERS = new Set(['no data', 'n/a', 'na', 'none', 'unknown', '-', '']);
-
-function guessGenderFromName(name: string): 'Male' | 'Female' {
-    if (!name) return 'Male';
-    const n = name.trim().toLowerCase().split(/[\s-]/)[0];
-    const femaleNames = new Set(['mary', 'jane', 'sarah', 'karen', 'michelle', 'jennifer', 'rachel',
-        'ruth', 'naomi', 'maria', 'anna', 'kristine', 'joan', 'joy', 'princess', 'angel',
-        'grace', 'hazel', 'carmel', 'isabel', 'maricel', 'liezel', 'april', 'cheryl',
-        'sharon', 'diane', 'helen', 'carol', 'abigail', 'miriam', 'esther', 'marianne',
-        'rowena', 'mylene', 'noreen', 'norma', 'nora', 'rosario', 'rose', 'roselyn',
-        'rosalyn', 'cristina', 'mae', 'bea', 'bianca', 'carmela', 'cecile', 'claire',
-        'clarissa', 'claudia', 'crystal', 'danica', 'darlene', 'denise', 'desiree',
-        'dina', 'edna', 'elaine', 'elena', 'elisa', 'eliza', 'ella', 'emily', 'emma',
-        'eva', 'faith', 'felicia', 'fiona', 'florence', 'gina', 'glenda', 'gloria',
-        'irene', 'iris', 'ivy', 'jacqueline', 'jennie', 'jessica', 'jocelyn', 'josephine',
-        'joanna', 'judy', 'julia', 'kathleen', 'katrina', 'kim', 'laura', 'lea',
-        'lily', 'linda', 'lisa', 'liza', 'lorna', 'lorraine', 'lucia', 'lucy', 'lyka',
-        'marlene', 'marta', 'melody', 'nina', 'olive', 'olivia', 'pamela', 'patricia',
-        'pearl', 'petra', 'pia', 'rebecca', 'rena', 'rhea', 'rina', 'roxanne', 'ruby',
-        'sabrina', 'sandra', 'sasha', 'selena', 'sheila', 'sherry', 'sofia', 'stella',
-        'sue', 'susan', 'suzanne', 'tatiana', 'theresa', 'tina', 'vera', 'vicki',
-        'victoria', 'vivian', 'wanda', 'wendy', 'yolanda', 'zoe']);
-    const maleNames = new Set(['michael', 'christian', 'david', 'joseph', 'daniel', 'james',
-        'ronald', 'richard', 'robert', 'william', 'kevin', 'jason', 'john', 'mark', 'paul',
-        'jay', 'peter', 'ryan', 'ian', 'eric', 'aaron', 'gabriel', 'francis', 'anthony',
-        'andrew', 'vincent', 'patrick', 'kenneth', 'steven', 'edward', 'brian', 'george',
-        'matthew', 'charles', 'bryan', 'jeffrey', 'jeremy', 'stephen', 'dennis', 'carl',
-        'louis', 'raymond', 'justin', 'victor', 'albert', 'alvin', 'rodel', 'ronel',
-        'rommel', 'ramil', 'roel', 'rolando', 'romeo', 'renato', 'ricky', 'rico',
-        'roderick', 'rodrigo', 'erwin', 'arnel', 'ben', 'benjamin', 'renz', 'ken', 'kurt',
-        'jan', 'jayson', 'jeff', 'jerome', 'jess', 'jesus', 'jim', 'joel', 'joey',
-        'jonathan', 'jorge', 'jose', 'juan', 'julius', 'jun', 'melvin', 'mike', 'neil',
-        'noel', 'norbert', 'oliver', 'oscar', 'randy', 'raul', 'rob', 'robbie', 'samuel',
-        'sean', 'sherwin', 'simon', 'sonny', 'theo', 'tom', 'tony', 'warren', 'wayne',
-        'wilson', 'xavier', 'zeus', 'aldrin', 'alex', 'alfredo', 'allen', 'amado', 'andrei']);
-    if (femaleNames.has(n)) return 'Female';
-    if (maleNames.has(n)) return 'Male';
-    const femaleSuffixes = ['lyn', 'line', 'mae', 'ann', 'anne', 'marie', 'beth', 'icel',
-        'elle', 'ice', 'ine', 'ette', 'ita', 'ina', 'isa', 'ela', 'ica', 'yza', 'iza',
-        'issa', 'essa', 'nia', 'mia', 'lia', 'lla', 'yla'];
-    for (const s of femaleSuffixes) if (n.endsWith(s) && n.length > 3) return 'Female';
-    const maleSuffixes = ['son', 'bert', 'ward', 'ard', 'ron', 'dan', 'ick', 'rick',
-        'ton', 'don', 'mon', 'vin', 'iel', 'uel', 'ell', 'ald', 'old', 'rey', 'roy'];
-    for (const s of maleSuffixes) if (n.endsWith(s) && n.length > 3) return 'Male';
-    if (n.endsWith('a') && n.length > 3) return 'Female';
-    const last = n[n.length - 1];
-    if (!'aeiou'.includes(last)) return 'Male';
-    if (last === 'o' || last === 'i') return 'Male';
-    return 'Female';
-}
-
-function normalizeGender(raw: string | null | undefined, firstName: string | null | undefined): 'Male' | 'Female' {
-    if (!raw) return guessGenderFromName(firstName || '');
-    const v = raw.trim().toLowerCase();
-    if (v === 'male' || v === 'm') return 'Male';
-    if (v === 'female' || v === 'f') return 'Female';
-    if (GENDER_PLACEHOLDERS.has(v)) return guessGenderFromName(firstName || '');
-    // Unknown/unexpected value - guess from name
-    return guessGenderFromName(firstName || '');
-}
-
 const DEFAULT_FILTERS: Filters = { search: '', country: '', gender: '', status: '' };
 
 export function useMasterlist(activeTab: string = 'dashboard') {
@@ -85,107 +24,67 @@ export function useMasterlist(activeTab: string = 'dashboard') {
         setLoading(true);
         setError(null);
         try {
-            const { data, error: err } = await supabase.functions.invoke('get-masterlist', {
-                method: 'POST',
-                body: { 
-                    country: activeTab,
-                    path: activeTab.includes('/') || activeTab.endsWith('.csv') ? activeTab : null
-                }
-            });
-            if (err) {
-                let detailedMsg = err.message;
-                if (err.context instanceof Response) {
-                    const status = err.context.status;
-                    const text = await err.context.text();
-                    detailedMsg = `HTTP ${status}: ${text.substring(0, 200)}...`;
-                }
-                throw new Error(detailedMsg);
-            }
+            const { data: users, error: err } = await supabase
+                .from('masterlist_entries')
+                .select('*')
+                .eq('source_file', activeTab);
 
-            const users: MasterlistEntry[] = data?.users || [];
+            if (err) throw new Error(err.message);
 
-            const total = users.length;
-            const active = users.filter((u: any) => (u.active_status || '').toLowerCase() === 'active').length;
+            const entries: MasterlistEntry[] = users || [];
+
+            const total = entries.length;
+            const active = entries.filter(u => (u.active_status || '').toLowerCase() === 'active').length;
             const inactive = total - active;
 
             const byCountry: Record<string, number> = {};
             const byGender: Record<string, number> = {};
             const byStatus: Record<string, number> = {};
             const byAffiliation: Record<string, number> = {};
-            const byAge: Record<string, number> = {
-                'Under 20': 0,
-                '20-29': 0,
-                '30-39': 0,
-                '40+': 0,
-                'Unknown': 0
-            };
+            const byAge: Record<string, number> = { 'Under 20': 0, '20-29': 0, '30-39': 0, '40+': 0, 'Unknown': 0 };
             const byMaritalStatus: Record<string, number> = {};
 
-            users.forEach((u: any) => {
+            entries.forEach(u => {
                 if (u.country) byCountry[u.country] = (byCountry[u.country] || 0) + 1;
-                const normalizedGender = normalizeGender(u.gender, u.first_name);
-                byGender[normalizedGender] = (byGender[normalizedGender] || 0) + 1;
+
+                const g = u.gender || 'Unknown';
+                byGender[g] = (byGender[g] || 0) + 1;
+
                 if (u.active_status) byStatus[u.active_status] = (byStatus[u.active_status] || 0) + 1;
                 if (u.affiliation_type) byAffiliation[u.affiliation_type] = (byAffiliation[u.affiliation_type] || 0) + 1;
 
                 if (u.age) {
                     const age = Number(u.age);
                     if (age < 20) byAge['Under 20']++;
-                    else if (age >= 20 && age <= 29) byAge['20-29']++;
-                    else if (age >= 30 && age <= 39) byAge['30-39']++;
-                    else if (age >= 40) byAge['40+']++;
-                    else byAge['Unknown']++;
+                    else if (age <= 29) byAge['20-29']++;
+                    else if (age <= 39) byAge['30-39']++;
+                    else byAge['40+']++;
                 } else {
                     byAge['Unknown']++;
                 }
 
                 if (u.marital_status) {
                     const ms = u.marital_status.trim().toLowerCase();
-                    if (ms) { // avoid empty strings
-                        let normalizedMs = 'Single'; // Default fallback
-
-                        if (ms.includes('married') || ms === 'marriage') {
-                            normalizedMs = 'Married';
-                        } else if (ms.includes('divorce') || ms === 'divorced') {
-                            normalizedMs = 'Divorced';
-                        } else if (ms.includes('widow') || ms === 'widowed') {
-                            normalizedMs = 'Widowed';
-                        } else if (ms.includes('separat')) {
-                            normalizedMs = 'Separated';
-                        } else if (ms.includes('annul')) {
-                            normalizedMs = 'Annulled';
-                        }
-
-                        byMaritalStatus[normalizedMs] = (byMaritalStatus[normalizedMs] || 0) + 1;
-                    }
+                    let normalizedMs = 'Single';
+                    if (ms.includes('married') || ms === 'marriage') normalizedMs = 'Married';
+                    else if (ms.includes('divorce')) normalizedMs = 'Divorced';
+                    else if (ms.includes('widow')) normalizedMs = 'Widowed';
+                    else if (ms.includes('separat')) normalizedMs = 'Separated';
+                    else if (ms.includes('annul')) normalizedMs = 'Annulled';
+                    byMaritalStatus[normalizedMs] = (byMaritalStatus[normalizedMs] || 0) + 1;
                 } else {
                     byMaritalStatus['Single'] = (byMaritalStatus['Single'] || 0) + 1;
                 }
             });
 
-            // Remove Unknown if it's 0 to keep the chart clean if everyone has an age
-            if (byAge['Unknown'] === 0) {
-                delete byAge['Unknown'];
-            }
+            if (byAge['Unknown'] === 0) delete byAge['Unknown'];
 
-            setAnalytics({
-                total,
-                byAffiliation,
-                active,
-                inactive,
-                byCountry,
-                byGender,
-                byStatus,
-                byAge,
-                byMaritalStatus,
-                joinedByMonth: []
-            });
-
+            setAnalytics({ total, byAffiliation, active, inactive, byCountry, byGender, byStatus, byAge, byMaritalStatus, joinedByMonth: [] });
             setCountries(Object.keys(byCountry));
             setGenders(Object.keys(byGender));
             setStatuses(Object.keys(byStatus));
-            setAllData(users);
-            setFilteredData(users);
+            setAllData(entries);
+            setFilteredData(entries);
             setLastUpdated(new Date());
         } catch (e: unknown) {
             setError(e instanceof Error ? e.message : 'Failed to fetch data');
@@ -200,45 +99,20 @@ export function useMasterlist(activeTab: string = 'dashboard') {
         let result = allData;
         if (filters.search) {
             const query = filters.search.toLowerCase();
-            result = result.filter((u: any) =>
+            result = result.filter(u =>
                 (u.first_name || '').toLowerCase().includes(query) ||
                 (u.last_name || '').toLowerCase().includes(query) ||
                 (u.email || '').toLowerCase().includes(query)
             );
         }
-        if (filters.country) {
-            result = result.filter((u: any) => u.country === filters.country);
-        }
-        if (filters.gender) {
-            result = result.filter((u: any) => u.gender === filters.gender);
-        }
-        if (filters.status) {
-            result = result.filter((u: any) => u.active_status === filters.status);
-        }
+        if (filters.country) result = result.filter(u => u.country === filters.country);
+        if (filters.gender) result = result.filter(u => u.gender === filters.gender);
+        if (filters.status) result = result.filter(u => u.active_status === filters.status);
         setFilteredData(result);
     }, [allData, filters]);
 
-    const updateFilter = (key: keyof Filters, value: string) => {
-        setFilters(prev => ({ ...prev, [key]: value }));
-    };
+    const updateFilter = (key: keyof Filters, value: string) => setFilters(prev => ({ ...prev, [key]: value }));
+    const resetFilters = () => setFilters(DEFAULT_FILTERS);
 
-    const resetFilters = () => {
-        setFilters(DEFAULT_FILTERS);
-    };
-
-    return {
-        allData,
-        filteredData,
-        analytics,
-        filters,
-        loading,
-        error,
-        lastUpdated,
-        fetchData,
-        updateFilter,
-        resetFilters,
-        countries,
-        genders,
-        statuses,
-    };
+    return { allData, filteredData, analytics, filters, loading, error, lastUpdated, fetchData, updateFilter, resetFilters, countries, genders, statuses };
 }
