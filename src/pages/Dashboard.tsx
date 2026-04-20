@@ -8,6 +8,11 @@ import AgeChart from '../components/dashboard/AgeChart';
 import PeopleNamesTable from '../components/dashboard/PeopleNamesTable';
 import MaritalStatusWidget from '../components/dashboard/MaritalStatusWidget';
 import OverviewContent from '../components/dashboard/OverviewContent';
+import JoinedTrendChart from '../components/dashboard/JoinedTrendChart';
+import GlobalSearch from '../components/dashboard/GlobalSearch';
+import StatusBreakdownChart from '../components/dashboard/StatusBreakdownChart';
+import FileHealthWidget from '../components/dashboard/FileHealthWidget';
+import DuplicateDetector from '../components/dashboard/DuplicateDetector';
 
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState('byu-overview');
@@ -20,14 +25,9 @@ export default function Dashboard() {
         lastUpdated,
         fetchData,
         updateFilter,
-        resetFilters,
-        countries,
-        genders,
-        statuses,
-        allData,
     } = useMasterlist(activeTab);
 
-    const renderContent = () => {
+    const renderCountryContent = () => {
         if (loading) {
             return (
                 <div className="flex-1 flex items-center justify-center">
@@ -52,7 +52,7 @@ export default function Dashboard() {
                         <p className="text-gray-500 text-sm mb-4">{error}</p>
                         <button
                             onClick={fetchData}
-                            className="px-6 py-2 bg-gradient-to-r from-emerald-600 to-teal-800 text-white rounded-xl font-medium hover:shadow-md transition"
+                            className="px-6 py-2 bg-linear-to-r from-emerald-600 to-teal-800 text-white rounded-xl font-medium hover:shadow-md transition"
                         >
                             Try Again
                         </button>
@@ -81,10 +81,9 @@ export default function Dashboard() {
 
         return (
             <div className="flex-1 overflow-y-auto space-y-6 pb-6">
-                {/* Stat Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
-                        label="Total Users"
+                        label="Total Participants"
                         value={analytics.total}
                         color="emerald"
                         icon={
@@ -93,19 +92,19 @@ export default function Dashboard() {
                             </svg>
                         }
                     />
-
-                    {/* Marital Status (Spans the remaining 3 columns on large screens) */}
                     <MaritalStatusWidget data={analytics.byMaritalStatus} />
                 </div>
 
-                {/* Charts */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <AffiliationChart data={analytics.byAffiliation} />
                     <GenderChart data={analytics.byGender} />
                     <AgeChart data={analytics.byAge} />
                 </div>
 
-                {/* People Names Table */}
+                {analytics.joinedByMonth.length > 0 && (
+                    <JoinedTrendChart data={analytics.joinedByMonth} />
+                )}
+
                 <PeopleNamesTable
                     data={filteredData}
                     search={filters.search}
@@ -115,48 +114,44 @@ export default function Dashboard() {
         );
     };
 
+    const renderGlobalContent = () => (
+        <div className="flex-1 overflow-y-auto space-y-6 pb-6">
+            <OverviewContent />
+            <StatusBreakdownChart />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <FileHealthWidget />
+                <DuplicateDetector />
+            </div>
+            <GlobalSearch />
+        </div>
+    );
+
     const tabTitles: Record<string, { title: string; subtitle?: string }> = {
         'byu-overview': { title: 'BYU Project Overview', subtitle: 'Summary of all files in the BYU folder' },
-        overview: { title: 'Lifewood Global Overview', subtitle: 'Total users across all countries' },
-        dashboard: { title: 'BYU x Lifewood PH Overview', subtitle: 'View all members in PH Masterlist' },
-        analytics: { title: 'BYU x Lifewood Fiji Overview', subtitle: 'View all members in Fiji Masterlist' },
-        users: { title: 'BYU x Lifewood NG Overview', subtitle: 'View all members in NG Masterlist' },
-        drc: { title: 'BYU x Lifewood DRC Overview', subtitle: 'View all members in DRC Masterlist' },
-        ghana: { title: 'BYU x Lifewood Ghana Overview', subtitle: 'View all members in Ghana Masterlist' },
-        madagascar: { title: 'BYU x Lifewood Madagascar Overview', subtitle: 'View all members in Madagascar Masterlist' },
-        malawi: { title: 'BYU x Lifewood Malawi Overview', subtitle: 'View all members in Malawi Masterlist' },
-        southafrica: { title: 'BYU x Lifewood South Africa Overview', subtitle: 'View all members in South Africa Masterlist' },
-        tonga: { title: 'BYU x Lifewood Tonga Overview', subtitle: 'View all members in Tonga Masterlist' },
-        uganda: { title: 'BYU x Lifewood Uganda Overview', subtitle: 'View all members in Uganda Masterlist' },
-        p100: { title: 'Lifewood P100 Overview', subtitle: 'View all members in P100 Masterlist' },
-        roc: { title: 'BYU x Lifewood Republic of the Congo Overview', subtitle: 'View all members in Republic of the Congo Masterlist' },
+        overview: { title: 'Lifewood Global Analytics', subtitle: 'World map, status breakdown & data health across all masterlists' },
     };
 
     const getMetadata = () => {
         if (tabTitles[activeTab]) return tabTitles[activeTab];
 
-        // Extract clean country name from filenames like:
-        // "Lifewood x BYU Philippines Masterlist (2025-2026)(Masterlist).csv"
-        // "Crowdsource Philippines/Database - PH Crowdsource1.xlsx"
         const fileName = activeTab.split('/').pop() || activeTab;
         const countryMatch = fileName.match(/Lifewood\s*x?\s*(?:BYU)?\s*([^(]+?)\s*Masterlist/i);
         if (countryMatch?.[1]) {
             const country = countryMatch[1].trim();
-            return {
-                title: `${country} Overview`,
-                subtitle: `BYU x Lifewood ${country} Masterlist`,
-            };
+            return { title: `${country} Overview`, subtitle: `BYU x Lifewood ${country} Masterlist` };
         }
 
-        // Fallback: strip extension and extra suffixes
-        const baseName = fileName
-            .replace(/\.(csv|xlsx|xls)$/i, '')
-            .replace(/\(.*?\)/g, '')
-            .trim();
+        const baseName = fileName.replace(/\.(csv|xlsx|xls)$/i, '').replace(/\(.*?\)/g, '').trim();
         return { title: `${baseName} Overview`, subtitle: `Analytics for ${fileName}` };
     };
 
     const metadata = getMetadata();
+
+    const renderContent = () => {
+        if (activeTab === 'byu-overview') return <OverviewContent folder="BYU" />;
+        if (activeTab === 'overview') return renderGlobalContent();
+        return renderCountryContent();
+    };
 
     return (
         <AppLayout
@@ -168,7 +163,7 @@ export default function Dashboard() {
             activeTab={activeTab}
             onTabChange={setActiveTab}
         >
-            {activeTab === 'byu-overview' ? <OverviewContent folder="BYU" /> : activeTab === 'overview' ? <OverviewContent /> : renderContent()}
+            {renderContent()}
         </AppLayout>
     );
 }

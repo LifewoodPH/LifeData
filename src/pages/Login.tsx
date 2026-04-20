@@ -51,7 +51,7 @@ export default function Login() {
                     {/* Logo Section */}
                     <div className="mb-8">
                         <div className="w-14 h-14 bg-emerald-800 rounded-xl shadow-lg flex items-center justify-center p-2 mb-6">
-                            <img src="/lifewoodicon.ico" alt="Lifewood Logo" className="w-full h-full object-contain filter brightness-0 invert" style={{ filter: 'brightness(0) invert(1)' }} />
+                            <img src="/lifedata.png" alt="Lifewood Logo" className="w-full h-full object-contain filter brightness-0 invert" style={{ filter: 'brightness(0) invert(1)' }} />
                         </div>
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h1>
                         <p className="text-sm text-gray-400">Welcome to LifeData - Access your dashboard</p>
@@ -120,7 +120,7 @@ export default function Login() {
                 {/* Footer Logo */}
                 <div className="mt-8 flex flex-col items-center justify-center pt-8 w-full max-w-sm relative z-10">
                     <div className="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 mb-2 flex items-center justify-center border border-gray-200/50 w-full max-w-[200px] shadow-sm">
-                        <img src="/logof.jpeg" alt="Lifewood" className="h-6 object-contain" />
+                        <img src="/lifewood.png" alt="Lifewood" className="h-6 object-contain" />
                     </div>
                     <p className="text-[10px] text-teal-900 font-semibold bg-white/50 px-2 py-0.5 rounded-full backdrop-blur-sm">
                         Powered by <span className="text-emerald-700">Lifewood PH</span>
@@ -151,7 +151,7 @@ export default function Login() {
                         {/* Floating Interface Elements Mockup */}
                         <div className="mt-16 ml-auto mr-0 w-3/4 bg-emerald-50/95 backdrop-blur-md rounded-2xl p-6 shadow-2xl border border-white/20 relative rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
                             <div className="w-8 h-8 opacity-40 mb-8">
-                                <img src="/lifewoodicon.ico" alt="" className="w-full h-full filter invert" />
+                                <img src="/lifedata.png" alt="" className="w-full h-full filter invert" />
                             </div>
 
                             <p className="text-3xl font-bold text-gray-900 tracking-tight">6,000.00+ <span className="text-lg text-emerald-700">Data</span></p>
@@ -176,7 +176,7 @@ export default function Login() {
                                 </div>
                                 <div className="w-4 h-4 rounded-full border-2 border-gray-300 opacity-50 mt-4"></div>
                                 <div className="w-8 h-8 rounded-lg bg-emerald-50 mt-2 flex items-center justify-center p-1.5 shadow-inner border border-gray-100">
-                                    <img src="/lifewoodicon.ico" alt="" className="w-full h-full opacity-60 filter invert" />
+                                    <img src="/lifedata.png" alt="" className="w-full h-full opacity-60 filter invert" />
                                 </div>
                             </div>
                         </div>

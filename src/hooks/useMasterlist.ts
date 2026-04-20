@@ -79,7 +79,20 @@ export function useMasterlist(activeTab: string = 'dashboard') {
 
             if (byAge['Unknown'] === 0) delete byAge['Unknown'];
 
-            setAnalytics({ total, byAffiliation, active, inactive, byCountry, byGender, byStatus, byAge, byMaritalStatus, joinedByMonth: [] });
+            // Build monthly join trend from joined_date (stored as text, various formats)
+            const monthCounts: Record<string, number> = {};
+            entries.forEach(u => {
+                if (!u.joined_date) return;
+                const d = new Date(u.joined_date);
+                if (isNaN(d.getTime())) return;
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                monthCounts[key] = (monthCounts[key] || 0) + 1;
+            });
+            const joinedByMonth = Object.entries(monthCounts)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([month, count]) => ({ month, count }));
+
+            setAnalytics({ total, byAffiliation, active, inactive, byCountry, byGender, byStatus, byAge, byMaritalStatus, joinedByMonth });
             setCountries(Object.keys(byCountry));
             setGenders(Object.keys(byGender));
             setStatuses(Object.keys(byStatus));

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import { supabase } from '../lib/supabase';
-import { Upload, File as FileIcon, Trash2, CheckCircle2, AlertCircle, Loader2, Folder, ChevronRight, HardDrive } from 'lucide-react';
+import { Upload, File as FileIcon, Trash2, CheckCircle2, AlertCircle, Loader2, Folder, ChevronRight, HardDrive, X, Clock } from 'lucide-react';
 import ConfirmationModal from '../components/admin/ConfirmationModal';
 import DataPreviewModal from '../components/admin/DataPreviewModal';
 
@@ -24,6 +24,7 @@ export default function Admin() {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [selectedFolder, setSelectedFolder] = useState(DESTINATION_FOLDERS[0].id);
+    const [masterlistMeta, setMasterlistMeta] = useState<Record<string, { ingested_at: string | null; row_count: number | null }>>({});
     const [status, setStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
     
     // Modal state
@@ -56,6 +57,17 @@ export default function Admin() {
         }
 
         setFiles(allFiles);
+
+        // Fetch ingested metadata from DB
+        const { data: meta } = await supabase
+            .from('masterlist_files')
+            .select('storage_path, ingested_at, row_count');
+        if (meta) {
+            const metaMap: Record<string, { ingested_at: string | null; row_count: number | null }> = {};
+            meta.forEach(m => { metaMap[m.storage_path] = { ingested_at: m.ingested_at, row_count: m.row_count }; });
+            setMasterlistMeta(metaMap);
+        }
+
         setLoading(false);
     };
 
@@ -244,9 +256,12 @@ export default function Admin() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {folderFiles.map((file) => {
                                             const filePath = file.folder && file.folder !== 'Root' ? `${file.folder}/${file.name}` : file.name;
+                                            const meta = masterlistMeta[filePath];
+                                            const ingestedAt = meta?.ingested_at ? new Date(meta.ingested_at) : null;
+                                            const rowCount = meta?.row_count;
                                             return (
-                                                <div 
-                                                    key={file.id} 
+                                                <div
+                                                    key={file.id}
                                                     onClick={() => setPreviewModal({ isOpen: true, file })}
                                                     className="group relative bg-white border border-gray-100 rounded-2xl p-4 hover:shadow-lg hover:border-emerald-200 transition-all duration-300 cursor-pointer active:scale-95"
                                                 >
@@ -268,9 +283,20 @@ export default function Admin() {
                                                     <h4 className="text-sm font-semibold text-gray-800 truncate mb-1" title={file.name}>
                                                         {file.name}
                                                     </h4>
-                                                    <p className="text-[10px] text-gray-400">
-                                                        Updated {new Date(file.updated_at).toLocaleDateString()}
-                                                    </p>
+                                                    <div className="flex flex-col gap-0.5">
+                                                        {ingestedAt ? (
+                                                            <p className="text-[10px] text-emerald-600 flex items-center gap-1">
+                                                                <Clock className="w-3 h-3" />
+                                                                Ingested {ingestedAt.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                                {rowCount != null && <span className="text-gray-400 ml-1">· {rowCount.toLocaleString()} rows</span>}
+                                                            </p>
+                                                        ) : (
+                                                            <p className="text-[10px] text-amber-500 flex items-center gap-1">
+                                                                <Clock className="w-3 h-3" />
+                                                                Not yet ingested
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                     <div className="mt-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-tighter">Click to Preview Data</span>
                                                         <ChevronRight className="w-3 h-3 text-emerald-400" />
@@ -317,11 +343,3 @@ export default function Admin() {
     );
 }
 
-// Helper icons
-function X({ className }: { className?: string }) {
-    return (
-        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-    );
-}

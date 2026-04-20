@@ -169,7 +169,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             <div className="flex items-center gap-3 mb-10">
                 <div className="w-12 h-12 flex items-center justify-center">
                     <img
-                        src="/logo1.jpeg"
+                        src="/lifedata.png"
                         alt="LifeData"
                         className="w-full h-full object-contain mix-blend-multiply filter drop-shadow-sm"
                         onError={(e) => {
@@ -306,7 +306,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
                 <div className="mt-2 flex flex-col items-center justify-center pt-2">
                     <div className="bg-white rounded-lg shadow-sm px-4 py-2 mb-2 flex items-center justify-center border border-gray-100 w-full hover:shadow-md transition-shadow">
-                        <img src="/logof.jpeg" alt="Lifewood" className="h-6 object-contain" />
+                        <img src="/lifewood.png" alt="Lifewood" className="h-6 object-contain" />
                     </div>
                     <p className="text-[10px] text-teal-800 font-medium">
                         Powered by <span className="text-amber-500">Lifewood PH</span>

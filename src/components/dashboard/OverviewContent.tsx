@@ -17,6 +17,7 @@ interface CountryData {
     country: string;
     users: number;
     flag: string;
+    sourcePath: string;
 }
 
 interface OverviewContentProps {
@@ -40,111 +41,48 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
             setLoading(true);
             setError(null);
             try {
-                let itemsToFetch: { id: string; label: string; flag: string; path?: string }[] = [];
+                const { data: files, error: filesError } = await supabase
+                    .from('masterlist_files')
+                    .select('storage_path, row_count');
 
-                if (folder) {
-                    // Specific Folder View (e.g., BYU, Crowdsource PH)
-                    const isBYU = folder.toLowerCase() === 'byu';
-                    
-                    // 1. Fetch items in the specific folder
-                    const { data: folderData } = await supabase.storage.from('Data').list(folder, { sortBy: { column: 'name', order: 'asc' } });
-                    if (folderData) {
-                        folderData.filter(f => f.id && f.name.endsWith('.csv')).forEach(f => {
-                            const fullPath = `${folder}/${f.name}`;
-                            itemsToFetch.push({
-                                id: fullPath,
-                                label: extractFileInfo(f.name).label,
-                                flag: getFlagEmoji(f.name),
-                                path: fullPath
-                            });
-                        });
-                    }
-
-                    // 2. For BYU, also include root files (legacy convention)
-                    if (isBYU) {
-                        const { data: rootData } = await supabase.storage.from('Data').list('', { sortBy: { column: 'name', order: 'asc' } });
-                        if (rootData) {
-                            rootData.filter(f => f.id && f.name.endsWith('.csv')).forEach(f => {
-                                // Only add if not already present
-                                if (!itemsToFetch.some(i => i.label === extractFileInfo(f.name).label)) {
-                                    itemsToFetch.push({
-                                        id: f.name,
-                                        label: extractFileInfo(f.name).label,
-                                        flag: getFlagEmoji(f.name),
-                                        path: f.name
-                                    });
-                                }
-                            });
-                        }
-                    }
-                } else {
-                    // GLOBAL OVERVIEW - Aggregates everything from all folders + root
-                    const { data: rootItems } = await supabase.storage.from('Data').list('', { sortBy: { column: 'name', order: 'asc' } });
-                    
-                    if (rootItems) {
-                        // All root files
-                        rootItems.filter(f => f.id && f.name.endsWith('.csv')).forEach(f => {
-                            itemsToFetch.push({
-                                id: f.name,
-                                label: extractFileInfo(f.name).label,
-                                flag: getFlagEmoji(f.name),
-                                path: f.name
-                            });
-                        });
-
-                        // All files in subfolders
-                        const storageFolders = rootItems.filter(f => !f.id && f.name !== '.emptyFolderPlaceholder');
-                        for (const subFolder of storageFolders) {
-                            const { data: folderFiles } = await supabase.storage.from('Data').list(subFolder.name, { sortBy: { column: 'name', order: 'asc' } });
-                            if (folderFiles) {
-                                folderFiles.filter(f => f.id && f.name.endsWith('.csv')).forEach(f => {
-                                    const fullPath = `${subFolder.name}/${f.name}`;
-                                    // Avoid duplicates by label
-                                    if (!itemsToFetch.some(i => i.label === extractFileInfo(f.name).label)) {
-                                        itemsToFetch.push({
-                                            id: fullPath,
-                                            label: extractFileInfo(f.name).label,
-                                            flag: getFlagEmoji(f.name),
-                                            path: fullPath
-                                        });
-                                    }
-                                });
-                            }
-                        }
-                    }
-                }
-
-                if (itemsToFetch.length === 0) {
+                if (filesError) throw new Error(filesError.message);
+                if (!files || files.length === 0) {
                     setData([]);
                     setTotalUsers(0);
                     setLoading(false);
                     return;
                 }
 
-                // Sorting alphabetically for consistent chart layout
-                itemsToFetch.sort((a, b) => a.label.localeCompare(b.label));
+                let filtered = files;
 
-                const results = await Promise.all(
-                    itemsToFetch.map(async (item) => {
-                        try {
-                            const { data, error } = await supabase.functions.invoke('get-masterlist', {
-                                method: 'POST',
-                                body: { 
-                                    country: item.id,
-                                    path: item.path || null
-                                },
-                            });
-                            if (error) return { country: item.label, users: 0, flag: item.flag };
-                            const users = data?.users || [];
-                            return { country: item.label, users: users.length, flag: item.flag };
-                        } catch {
-                            return { country: item.label, users: 0, flag: item.flag };
-                        }
+                if (folder) {
+                    const folderLower = folder.toLowerCase();
+                    if (folderLower === 'byu') {
+                        // BYU folder: files starting with "BYU/" or root-level files (no "/" in path)
+                        filtered = files.filter(f =>
+                            f.storage_path.toLowerCase().startsWith('byu/') ||
+                            !f.storage_path.includes('/')
+                        );
+                    } else {
+                        filtered = files.filter(f =>
+                            f.storage_path.toLowerCase().startsWith(folder.toLowerCase() + '/')
+                        );
+                    }
+                }
+
+                const results: CountryData[] = filtered
+                    .map(f => {
+                        const fileName = f.storage_path.split('/').pop() || f.storage_path;
+                        return {
+                            country: extractFileInfo(fileName).label,
+                            users: f.row_count || 0,
+                            flag: getFlagEmoji(fileName),
+                            sourcePath: f.storage_path,
+                        };
                     })
-                );
+                    .sort((a, b) => b.users - a.users);
 
-                const sortedByCount = [...results].sort((a, b) => b.users - a.users);
-                setData(sortedByCount);
+                setData(results);
                 setTotalUsers(results.reduce((sum, c) => sum + c.users, 0));
             } catch (e: unknown) {
                 setError(e instanceof Error ? e.message : 'Failed to fetch overview data');
@@ -162,7 +100,6 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
                 <div className="text-center">
                     <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4" />
                     <p className="text-gray-500 font-medium">Loading overview data…</p>
-                    <p className="text-gray-400 text-sm mt-1">Aggregating records from all masterlists</p>
                 </div>
             </div>
         );
@@ -184,14 +121,16 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
         );
     }
 
+    const activeRegions = data.filter(d => d.users > 0).length;
+
     return (
         <div className="flex-1 overflow-y-auto space-y-6 pb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full -translate-y-6 translate-x-6" />
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-linear-to-br from-emerald-400/20 to-teal-400/20 rounded-full -translate-y-6 translate-x-6" />
                     <div className="relative">
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Total Active Users</p>
-                        <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-700 bg-clip-text text-transparent">
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Total Participants</p>
+                        <p className="text-3xl font-bold bg-linear-to-r from-emerald-600 to-teal-700 bg-clip-text text-transparent">
                             {totalUsers.toLocaleString()}
                         </p>
                         <p className="text-xs text-gray-400 mt-1">{folder ? `In ${folder} project` : 'Across Lifewood Global'}</p>
@@ -199,13 +138,13 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
                 </div>
 
                 <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full -translate-y-6 translate-x-6" />
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-linear-to-br from-blue-400/20 to-indigo-400/20 rounded-full -translate-y-6 translate-x-6" />
                     <div className="relative">
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Total Regions</p>
-                        <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
-                            {data.filter(d => d.users > 0).length}
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Active Regions</p>
+                        <p className="text-3xl font-bold bg-linear-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                            {activeRegions}
                         </p>
-                        <p className="text-xs text-gray-400 mt-1">Active data sources</p>
+                        <p className="text-xs text-gray-400 mt-1">of {data.length} total masterlists</p>
                     </div>
                 </div>
             </div>
@@ -214,7 +153,7 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h3 className="text-lg font-bold text-gray-800">{folder ? `${folder} Project Overview` : 'Lifewood Global Overview'}</h3>
-                        <p className="text-sm text-gray-400 mt-0.5">{folder ? `Summary of all files in the ${folder} project` : 'Aggregated overview of all registered users'}</p>
+                        <p className="text-sm text-gray-400 mt-0.5">Participants per masterlist</p>
                     </div>
                     <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm border border-emerald-100/50">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -263,15 +202,10 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
                                 padding: '12px 16px',
                             }}
                             labelStyle={{ fontWeight: 700, color: '#1f2937', fontSize: 14 }}
-                            formatter={(value: number | string | undefined) => [`${Number(value ?? 0).toLocaleString()} users`, 'Count']}
+                            formatter={(value: number | string | undefined) => [`${Number(value ?? 0).toLocaleString()} participants`, 'Count']}
                             cursor={{ fill: 'rgba(16, 185, 129, 0.04)' }}
                         />
-                        <Bar
-                            dataKey="users"
-                            name="Users"
-                            radius={[8, 8, 0, 0]}
-                            maxBarSize={56}
-                        >
+                        <Bar dataKey="users" name="Participants" radius={[8, 8, 0, 0]} maxBarSize={56}>
                             <LabelList
                                 dataKey="users"
                                 position="top"
@@ -279,10 +213,7 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
                                 formatter={(value: any) => Number(value ?? 0).toLocaleString()}
                             />
                             {data.map((_entry, index) => (
-                                <Cell
-                                    key={index}
-                                    fill={`url(#barGrad${index % BAR_COLORS.length})`}
-                                />
+                                <Cell key={index} fill={`url(#barGrad${index % BAR_COLORS.length})`} />
                             ))}
                         </Bar>
                     </BarChart>
@@ -294,7 +225,7 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {data.map((item, index) => (
                         <div
-                            key={item.country}
+                            key={item.sourcePath}
                             className="flex items-center justify-between p-4 rounded-xl bg-white/60 hover:bg-white/90 border border-gray-100 hover:border-emerald-200 transition-all duration-200 hover:shadow-sm group"
                         >
                             <div className="flex items-center gap-3">
@@ -306,7 +237,7 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
                             </div>
                             <div className="flex flex-col items-end">
                                 <span className="text-sm font-bold text-gray-800 leading-none">{item.users.toLocaleString()}</span>
-                                <span className="text-[10px] text-gray-400 font-medium">users</span>
+                                <span className="text-[10px] text-gray-400 font-medium">participants</span>
                             </div>
                         </div>
                     ))}

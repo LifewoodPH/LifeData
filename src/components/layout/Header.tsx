@@ -17,32 +17,23 @@ export default function Header({
         date.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
 
     return (
-        <header className="glass-card rounded-2xl px-6 py-4 flex items-center mb-6 relative">
-            {/* Title */}
+        <header className="glass-card rounded-2xl px-6 py-4 flex items-center mb-6">
             <div className="flex-1 min-w-0 pr-4">
                 <h2 className="text-xl font-bold text-gray-800 truncate">{title}</h2>
                 {subtitle && <p className="text-sm text-gray-400 truncate">{subtitle}</p>}
             </div>
 
-            {/* Center Logo */}
-            <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center pointer-events-none">
-                <img src="/logof.jpeg" alt="Logo" className="h-10 w-auto object-contain mix-blend-multiply" />
-            </div>
-
-            {/* Right Side Actions */}
-            <div className="flex items-center gap-4">
-                {/* Last updated */}
+            <div className="flex items-center gap-3">
                 {lastUpdated && (
-                    <span className="text-xs text-gray-400 whitespace-nowrap">
+                    <span className="text-xs text-gray-400 whitespace-nowrap hidden sm:block">
                         Updated {formatTime(lastUpdated)}
                     </span>
                 )}
 
-                {/* Refresh */}
                 <button
                     onClick={onRefresh}
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-800 text-white text-sm font-medium rounded-xl shadow-md shadow-emerald-200 hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:opacity-60 disabled:scale-100"
+                    className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-emerald-600 to-teal-800 text-white text-sm font-medium rounded-xl shadow-md shadow-emerald-200 hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:opacity-60 disabled:scale-100"
                 >
                     <svg
                         className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
