@@ -110,6 +110,18 @@ export const getFileIcon = (filename: string) => {
 };
 
 /**
+ * Returns the ISO 2-letter country code for a file, or null if not found.
+ */
+export const getCountryISOCode = (filename: string) => {
+    const { label, isP100 } = extractFileInfo(filename);
+    if (isP100) return null;
+
+    const lowerLabel = label.toLowerCase();
+    return COUNTRY_MAP[lowerLabel] ||
+           Object.entries(COUNTRY_MAP).find(([key]) => lowerLabel.includes(key.toLowerCase()))?.[1];
+};
+
+/**
  * Returns a simple string emoji flag for cases where <img> is not ideal (e.g., charts).
  */
 export const getFlagEmoji = (filename: string) => {

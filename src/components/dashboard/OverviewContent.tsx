@@ -11,12 +11,13 @@ import {
     Cell,
     LabelList,
 } from 'recharts';
-import { extractFileInfo, getFlagEmoji } from '../../utils/fileMetadata';
+import { extractFileInfo, getCountryISOCode, getFlagEmoji } from '../../utils/fileMetadata';
 
 interface CountryData {
     country: string;
     users: number;
     flag: string;
+    isoCode: string | null;
     sourcePath: string;
 }
 
@@ -77,6 +78,7 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
                             country: extractFileInfo(fileName).label,
                             users: f.row_count || 0,
                             flag: getFlagEmoji(fileName),
+                            isoCode: getCountryISOCode(fileName),
                             sourcePath: f.storage_path,
                         };
                     })
@@ -232,7 +234,11 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
                                 <span className="text-xs font-bold text-gray-300 w-5 group-hover:text-emerald-400 transition-colors">
                                     {String(index + 1).padStart(2, '0')}
                                 </span>
-                                <span className="text-xl filter drop-shadow-sm">{item.flag}</span>
+                                {item.isoCode ? (
+                                    <span className={`fi fi-${item.isoCode} inline-block text-xl filter drop-shadow-sm`} />
+                                ) : (
+                                    <span className="text-xl filter drop-shadow-sm">{item.flag}</span>
+                                )}
                                 <span className="text-sm font-semibold text-gray-700">{item.country}</span>
                             </div>
                             <div className="flex flex-col items-end">
