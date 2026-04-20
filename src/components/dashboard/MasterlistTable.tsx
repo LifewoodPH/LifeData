@@ -30,7 +30,33 @@ export default function MasterlistTable({ data }: MasterlistTableProps) {
         <div className="glass-card rounded-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-white/40 flex items-center justify-between">
                 <h3 className="text-base font-bold text-gray-700">Masterlist</h3>
-                <span className="text-xs text-gray-400">{data.length} records</span>
+                <div className="flex items-center gap-3">
+                    <span className="text-xs text-gray-400">{data.length} records</span>
+                    <button
+                        onClick={() => {
+                            const headers = ['First Name','Last Name','Email','Gender','Age','Country','City','Affiliation','Marital Status','Status','Joined Date','Contact'];
+                            const rows = data.map(e => [
+                                e.first_name, e.last_name, e.email, e.gender, e.age,
+                                e.country, e.city, e.affiliation_type, e.marital_status,
+                                e.active_status, e.joined_date, e.contact_number
+                            ].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
+                            const csv = [headers.join(','), ...rows].join('\n');
+                            const blob = new Blob([csv], { type: 'text/csv' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'masterlist-export.csv';
+                            a.click();
+                            URL.revokeObjectURL(url);
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-100 transition-colors"
+                    >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Export CSV
+                    </button>
+                </div>
             </div>
 
             <div className="overflow-x-auto">

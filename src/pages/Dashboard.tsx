@@ -63,6 +63,22 @@ export default function Dashboard() {
 
         if (!analytics) return null;
 
+        if (analytics.total === 0) {
+            return (
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="glass-card rounded-2xl p-10 text-center max-w-sm">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                            </svg>
+                        </div>
+                        <h3 className="text-base font-bold text-gray-700 mb-1">No data ingested yet</h3>
+                        <p className="text-sm text-gray-400">This file hasn't been processed. Go to <span className="font-medium text-emerald-600">File Manager</span> and re-upload it to ingest the data.</p>
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className="flex-1 overflow-y-auto space-y-6 pb-6">
                 {/* Stat Cards */}
@@ -118,18 +134,26 @@ export default function Dashboard() {
 
     const getMetadata = () => {
         if (tabTitles[activeTab]) return tabTitles[activeTab];
-        
-        // Dynamic titles for uploaded files
-        if (activeTab.includes('/') || activeTab.endsWith('.csv')) {
-            const fileName = activeTab.split('/').pop() || activeTab;
-            const baseName = fileName.replace(/\.csv$/, '').replace(/\(\w+\)$/, '').trim();
+
+        // Extract clean country name from filenames like:
+        // "Lifewood x BYU Philippines Masterlist (2025-2026)(Masterlist).csv"
+        // "Crowdsource Philippines/Database - PH Crowdsource1.xlsx"
+        const fileName = activeTab.split('/').pop() || activeTab;
+        const countryMatch = fileName.match(/Lifewood\s*x?\s*(?:BYU)?\s*([^(]+?)\s*Masterlist/i);
+        if (countryMatch?.[1]) {
+            const country = countryMatch[1].trim();
             return {
-                title: `${baseName} Overview`,
-                subtitle: `Analytics for ${fileName}`
+                title: `${country} Overview`,
+                subtitle: `BYU x Lifewood ${country} Masterlist`,
             };
         }
-        
-        return { title: 'Dashboard', subtitle: '' };
+
+        // Fallback: strip extension and extra suffixes
+        const baseName = fileName
+            .replace(/\.(csv|xlsx|xls)$/i, '')
+            .replace(/\(.*?\)/g, '')
+            .trim();
+        return { title: `${baseName} Overview`, subtitle: `Analytics for ${fileName}` };
     };
 
     const metadata = getMetadata();

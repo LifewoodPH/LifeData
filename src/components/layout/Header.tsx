@@ -19,13 +19,13 @@ export default function Header({
     return (
         <header className="glass-card rounded-2xl px-6 py-4 flex items-center mb-6 relative">
             {/* Title */}
-            <div className="flex-1">
-                <h2 className="text-xl font-bold text-gray-800">{title}</h2>
-                {subtitle && <p className="text-sm text-gray-400">{subtitle}</p>}
+            <div className="flex-1 min-w-0 pr-4">
+                <h2 className="text-xl font-bold text-gray-800 truncate">{title}</h2>
+                {subtitle && <p className="text-sm text-gray-400 truncate">{subtitle}</p>}
             </div>
 
             {/* Center Logo */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center pointer-events-none">
+            <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center pointer-events-none">
                 <img src="/logof.jpeg" alt="Logo" className="h-10 w-auto object-contain mix-blend-multiply" />
             </div>
 

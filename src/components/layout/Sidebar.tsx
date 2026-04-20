@@ -35,6 +35,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     const fetchFiles = React.useCallback(async () => {
         setLoading(true);
         const categories: Record<string, NavItem[]> = {};
+
         
         try {
             // 1. Fetch root items to discover folders and root files
