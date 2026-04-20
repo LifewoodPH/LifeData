@@ -1,5 +1,7 @@
 import React from 'react';
 import { LayoutDashboard } from 'lucide-react';
+// @ts-ignore
+import 'flag-icons/css/flag-icons.min.css';
 
 /**
  * Lightweight mapping of country names to ISO codes for flag generation.
@@ -97,10 +99,9 @@ export const getFileIcon = (filename: string) => {
 
     if (isoCode) {
         return (
-            <img 
-                src={`https://flagcdn.com/w40/${isoCode}.png`} 
-                alt={label} 
-                className="w-5 h-auto rounded-xs shadow-sm" 
+            <span
+                className={`fi fi-${isoCode} inline-block w-5 h-auto rounded-xs shadow-sm`}
+                title={label}
             />
         );
     }
