@@ -80,7 +80,7 @@ export default function GlobalSearch() {
                 <button
                     onClick={() => runSearch(query)}
                     disabled={loading || query.trim().length < 2}
-                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white text-sm font-medium rounded-xl disabled:opacity-50 hover:shadow-md transition"
+                    className="px-5 py-2.5 bg-linear-to-r from-emerald-600 to-teal-700 text-white text-sm font-medium rounded-xl disabled:opacity-50 hover:shadow-md transition"
                 >
                     {loading ? (
                         <span className="flex items-center gap-2">

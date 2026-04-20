@@ -86,7 +86,7 @@ export const getFileIcon = (filename: string) => {
     
     if (isP100) {
         return (
-            <span className="w-auto min-w-[1.4rem] h-5 px-1 flex items-center justify-center text-[11px] font-bold bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-[4px] shadow-sm leading-none tracking-tight">
+            <span className="w-auto min-w-[1.4rem] h-5 px-1 flex items-center justify-center text-[11px] font-bold bg-linear-to-br from-amber-400 to-orange-500 text-white rounded-[4px] shadow-sm leading-none tracking-tight">
                 P100
             </span>
         );

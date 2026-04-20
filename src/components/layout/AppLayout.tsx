@@ -24,7 +24,7 @@ export default function AppLayout({
     onTabChange = () => { }
 }: AppLayoutProps) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-100 via-emerald-50 to-teal-100 flex relative overflow-hidden">
+        <div className="min-h-screen bg-linear-to-br from-slate-100 via-emerald-50 to-teal-100 flex relative overflow-hidden">
             {/* Ambient Video Background */}
             <video
                 autoPlay

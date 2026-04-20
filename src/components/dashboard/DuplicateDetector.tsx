@@ -64,7 +64,7 @@ export default function DuplicateDetector() {
                 <button
                     onClick={detect}
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl shadow-sm hover:shadow-md disabled:opacity-50 transition"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-linear-to-r from-amber-500 to-orange-500 text-white rounded-xl shadow-sm hover:shadow-md disabled:opacity-50 transition"
                 >
                     {loading ? (
                         <>

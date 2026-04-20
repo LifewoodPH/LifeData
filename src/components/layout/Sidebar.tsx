@@ -197,7 +197,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                             key={item.id}
                             onClick={() => handleNavClick(item.id, item.path)}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${isActive
-                                ? 'bg-gradient-to-r from-emerald-600 to-teal-800 text-white shadow-md shadow-emerald-200'
+                                ? 'bg-linear-to-r from-emerald-600 to-teal-800 text-white shadow-md shadow-emerald-200'
                                 : 'text-gray-500 hover:text-gray-800 hover:bg-white/60'
                                 }`}
                         >
@@ -251,7 +251,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                                                     key={item.id}
                                                     onClick={() => handleNavClick(item.id)}
                                                     className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-xs font-medium transition-all duration-200 ${isActive
-                                                        ? 'bg-gradient-to-r from-emerald-600 to-teal-800 text-white shadow-sm'
+                                                        ? 'bg-linear-to-r from-emerald-600 to-teal-800 text-white shadow-sm'
                                                         : 'text-gray-500 hover:text-gray-800 hover:bg-white/60'
                                                         }`}
                                                 >
@@ -274,7 +274,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                     <Link
                         to="/admin"
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${isAdminRoute
-                            ? 'bg-gradient-to-r from-emerald-600 to-teal-800 text-white shadow-md shadow-emerald-200'
+                            ? 'bg-linear-to-r from-emerald-600 to-teal-800 text-white shadow-md shadow-emerald-200'
                             : 'text-gray-500 hover:text-gray-800 hover:bg-white/60'
                             }`}
                     >
@@ -288,7 +288,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             <div className="mt-4 pt-4 border-t border-white/40 flex flex-col gap-4">
                 <div className="flex items-center justify-between px-3">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white text-xs font-bold shadow">
+                        <div className="w-8 h-8 rounded-full bg-linear-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white text-xs font-bold shadow">
                             L
                         </div>
                         <div>

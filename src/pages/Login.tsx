@@ -103,7 +103,7 @@ export default function Login() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-900 hover:to-emerald-800 text-white font-medium py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+                            className="w-full bg-linear-to-r from-emerald-800 to-emerald-700 hover:from-emerald-900 hover:to-emerald-800 text-white font-medium py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed mt-2"
                         >
                             {loading ? (
                                 <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -132,7 +132,7 @@ export default function Login() {
             <div className="hidden lg:flex lg:w-1/2 relative p-4">
                 <div className="w-full h-full rounded-3xl bg-emerald-950 overflow-hidden relative shadow-2xl flex flex-col justify-center items-center p-12">
                     {/* Dark gradient blur background effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-900 via-emerald-950 to-teal-950 opacity-90"></div>
+                    <div className="absolute inset-0 bg-linear-to-br from-emerald-900 via-emerald-950 to-teal-950 opacity-90"></div>
 
                     {/* Abstract blur circles for depth */}
                     <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-emerald-800 mix-blend-screen filter blur-[120px] opacity-30"></div>

@@ -69,8 +69,8 @@ export default function ConfirmationModal({
                         }}
                         className={`flex-1 text-white py-2.5 rounded-xl font-semibold text-sm transition-all shadow-md ${
                             type === 'danger' 
-                                ? 'bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 shadow-rose-200' 
-                                : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-amber-200'
+                                ? 'bg-linear-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 shadow-rose-200' 
+                                : 'bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-amber-200'
                         }`}
                     >
                         {confirmText}

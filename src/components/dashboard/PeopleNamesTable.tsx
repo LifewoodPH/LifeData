@@ -18,7 +18,7 @@ export default function PeopleNamesTable({ data, search, onSearchChange, fullVie
             {/* Header */}
             <div className="px-6 py-4 border-b border-white/40 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-teal-800 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-linear-to-br from-emerald-600 to-teal-800 rounded-lg flex items-center justify-center">
                         <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
@@ -89,7 +89,7 @@ export default function PeopleNamesTable({ data, search, onSearchChange, fullVie
                                         <td className={`sticky left-0 z-20 border-r border-gray-100 px-4 py-3 text-gray-400 text-[10px] font-mono ${idx % 2 === 0 ? 'bg-white' : 'bg-[#fcfdfd]'}`}>{idx + 1}</td>
                                         <td className={`sticky left-12 z-20 border-r-2 border-emerald-50 px-4 py-3 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#fcfdfd]'}`}>
                                             <div className="flex items-center gap-3">
-                                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500/80 to-teal-600/80 flex items-center justify-center text-white text-[10px] font-bold shrink-0 shadow-sm">
+                                                <div className="w-7 h-7 rounded-full bg-linear-to-br from-emerald-500/80 to-teal-600/80 flex items-center justify-center text-white text-[10px] font-bold shrink-0 shadow-sm">
                                                     {initials}
                                                 </div>
                                                 <span className="font-semibold text-gray-700 whitespace-nowrap text-sm tracking-tight">{fullName}</span>
