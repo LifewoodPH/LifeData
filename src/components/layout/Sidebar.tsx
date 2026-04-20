@@ -121,9 +121,11 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 // Sort items in category by label
                 const items = [...categories[id]].sort((a, b) => a.label.localeCompare(b.label));
 
-                // Special case: Add "Overview" to BYU
-                const finalItems = id === 'byu' 
+                // Special case: Add "Overview" to BYU and Crowdsource Philippines
+                const finalItems = id === 'byu'
                     ? [{ id: 'byu-overview', icon: <LayoutDashboard className="w-5 h-5 text-emerald-600" />, label: 'BYU Overview' }, ...items]
+                    : id === 'crowdsource-philippines'
+                    ? [{ id: 'crowdsource-ph-overview', icon: <LayoutDashboard className="w-5 h-5 text-emerald-600" />, label: 'PH Overview' }, ...items]
                     : items;
 
                 return { id, label, icon, items: finalItems };
@@ -223,7 +225,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                                 }`}
                             >
                                 <div className="flex items-start gap-3">
-                                    <span className={`flex-shrink-0 mt-0.5 ${hasActiveChild ? 'text-emerald-600' : 'text-gray-400'}`}>
+                                    <span className={`shrink-0 mt-0.5 ${hasActiveChild ? 'text-emerald-600' : 'text-gray-400'}`}>
                                         {folder.icon}
                                     </span>
                                     <span className="text-left leading-tight pt-0.5">
@@ -231,12 +233,12 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                                     </span>
                                 </div>
                                 <ChevronDown 
-                                    className={`w-4 h-4 flex-shrink-0 mt-1 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+                                    className={`w-4 h-4 shrink-0 mt-1 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
                                 />
                             </button>
 
                             {/* Folder Items */}
-                            <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
+                            <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-250 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
                                 <div className="pl-4 mt-1 space-y-1 border-l-2 border-emerald-100/50 ml-6">
                                     {loading ? (
                                         <div className="px-4 py-2 flex items-center gap-2">

@@ -32,7 +32,7 @@ export default function AffiliationChart({ data }: AffiliationChartProps) {
         <div className="glass-card rounded-2xl p-6">
             <h3 className="text-base font-bold text-gray-700 mb-3">Users by Affiliation</h3>
             {/* Totals Summary */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 max-h-[40px] overflow-hidden hover:max-h-[200px] transition-all">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 max-h-10 overflow-hidden hover:max-h-50 transition-all">
                 {chartData.map((entry, index) => (
                     <div key={entry.type} className="flex items-center gap-1.5">
                         <div

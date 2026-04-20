@@ -13,6 +13,7 @@ import GlobalSearch from '../components/dashboard/GlobalSearch';
 import StatusBreakdownChart from '../components/dashboard/StatusBreakdownChart';
 import FileHealthWidget from '../components/dashboard/FileHealthWidget';
 import DuplicateDetector from '../components/dashboard/DuplicateDetector';
+import CrowdsourcePHContent from '../components/dashboard/CrowdsourcePHContent';
 
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState('byu-overview');
@@ -128,6 +129,7 @@ export default function Dashboard() {
 
     const tabTitles: Record<string, { title: string; subtitle?: string }> = {
         'byu-overview': { title: 'BYU Project Overview', subtitle: 'Summary of all files in the BYU folder' },
+        'crowdsource-ph-overview': { title: 'Crowdsource Philippines', subtitle: 'Participant origin, languages & contact completeness' },
         overview: { title: 'Lifewood Global Analytics', subtitle: 'World map, status breakdown & data health across all masterlists' },
     };
 
@@ -149,6 +151,7 @@ export default function Dashboard() {
 
     const renderContent = () => {
         if (activeTab === 'byu-overview') return <OverviewContent folder="BYU" />;
+        if (activeTab === 'crowdsource-ph-overview') return <CrowdsourcePHContent />;
         if (activeTab === 'overview') return renderGlobalContent();
         return renderCountryContent();
     };
