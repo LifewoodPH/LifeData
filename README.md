@@ -1,16 +1,58 @@
-# React + Vite
+# 🌌 LifeData Analytics Hub
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![Vercel Deployment](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://phlifewood-lifedata.vercel.app/)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 
-Currently, two official plugins are available:
+> **Premium Global Insights Dashboard** for Lifewood's international crowdsourcing and BYU projects.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## ✨ Design Philosophy: The "Aurora" Experience
+LifeData is not just a dashboard; it's a high-performance visual experience. The interface utilizes a **Modern Glassmorphism** design system paired with an interactive **Aurora background mesh**, providing a premium SaaS feel that feels alive and responsive.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 🎨 Visual Highlights:
+- **Aurora Mesh Backdrop**: Smoothly animated color gradients that create depth.
+- **Frosted Glass Components**: High-end transparency effects with subtle borders.
+- **Micro-Animations**: Staggered entrance animations and hover-glow effects on all interactive elements.
+- **Responsive Layout**: Seamless transition between desktop analytics and mobile monitoring.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 Core Functionalities
+
+### 📊 Dynamic Project Dashboards
+Integrated real-time data from multiple international project tables (Philippines, Kenya, Malawi, DRC, Ghana, etc.).
+- **Automated Metrics**: Instant calculation of Total Participants, Average Age, and Nationalities.
+- **Organizational Insights**: Automatic identification of top affiliations and partner groups.
+- **Trend Analysis**: Monthly join-rate visualizations to track project growth.
+
+### 🔍 Advanced Data Management
+- **Universal Search**: Lightning-fast filtering across all participant fields.
+- **Smart Normalization**: Automatically merges variations (e.g., "Student Number" vs "Student ID") for accurate statistics.
+- **Demographic Distribution**: Interactive charts for Gender and Age breakdown.
+
+### 🛡️ Administrative Security
+- **Anonymized Profiles**: Generic Admin accounts for security and privacy.
+- **Supabase Integration**: Secure, scalable backend for real-time data retrieval.
+
+---
+
+## 🛠️ Tech Stack
+- **Frontend**: React 18, Vite
+- **Styling**: Tailwind CSS + Custom Vanilla CSS (Design Tokens)
+- **Database**: Supabase (Postgres)
+- **Icons**: Lucide React
+- **Charts**: Recharts (Custom themed)
+- **Animations**: CSS Keyframes + Staggered Delays
+
+---
+
+## 🌐 Live Access
+Check out the production environment:  
+**[phlifewood-lifedata.vercel.app](https://phlifewood-lifedata.vercel.app/)**
+
+---
+
+© 2026 Lifewood PH. All rights reserved. Powered by the Advanced Agentic Coding Team.
