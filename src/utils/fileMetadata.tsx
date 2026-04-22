@@ -39,7 +39,7 @@ const COUNTRY_MAP: Record<string, string> = {
  * Pattern: "Lifewood x [Project] [Country] Masterlist..."
  */
 export const extractFileInfo = (filename: string) => {
-    const cleanName = filename.replace(/\.(csv|xlsx|xls)$/i, '');
+    const cleanName = filename.replace(/\.(csv|xlsx)$/i, '');
     
     // Attempt to extract the core name using various known patterns
     // 1. "Lifewood x BYU [Country] Masterlist ..."
@@ -67,16 +67,26 @@ export const extractFileInfo = (filename: string) => {
                 break;
             }
         }
-        
-        // Final cleanups for specifically long labels
-        if (label.toLowerCase() === 'democratic republic of congo') label = 'DRC';
-        if (label.toLowerCase() === 'republic of the congo') label = 'R. Congo';
     }
-    
+
     return {
         label: label || cleanName,
         isP100
     };
+};
+
+/**
+ * Returns truncated label for long country names (for left-aligned displays like sidebars).
+ * Use only for sidebar/list displays, not for centered displays like charts.
+ */
+export const getTruncatedLabel = (filename: string): string => {
+    const { label } = extractFileInfo(filename);
+
+    // Truncate long country names for left-aligned sidebar display only
+    if (label.toLowerCase() === 'democratic republic of congo') return 'DRC';
+    if (label.toLowerCase() === 'republic of the congo') return 'R. Congo';
+
+    return label;
 };
 
 /**

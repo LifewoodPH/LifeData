@@ -48,15 +48,16 @@ export default function AffiliationChart({ data }: AffiliationChartProps) {
                     </div>
                 ))}
             </div>
-            <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
+            <ResponsiveContainer width="100%" height={Math.max(260, chartData.length * 52)}>
+                <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 50, left: 8, bottom: 4 }} barCategoryGap="30%">
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 11, fill: '#6b7280' }} allowDecimals={false} />
-                    <YAxis dataKey="type" type="category" tick={{ fontSize: 11, fill: '#6b7280' }} width={90} />
+                    <XAxis type="number" tick={{ fontSize: 11, fill: '#9ca3af' }} allowDecimals={false} axisLine={false} tickLine={false} />
+                    <YAxis dataKey="type" type="category" tick={{ fontSize: 12, fill: '#374151', fontWeight: 500 }} width={110} axisLine={false} tickLine={false} />
                     <Tooltip
-                        contentStyle={{ background: 'rgba(255,255,255,0.95)', borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                        contentStyle={{ background: 'rgba(255,255,255,0.98)', borderRadius: 12, border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+                        formatter={(value) => [value, 'Users']}
                     />
-                    <Bar dataKey="count" name="Users" radius={[0, 6, 6, 0]}>
+                    <Bar dataKey="count" name="Users" radius={[0, 8, 8, 0]} maxBarSize={28}>
                         {chartData.map((_entry, index) => (
                             <Cell key={index} fill={COLORS[index % COLORS.length]} />
                         ))}

@@ -7,11 +7,45 @@ interface PeopleNamesTableProps {
     fullView?: boolean;
 }
 
+const isUrl = (str: string): boolean => {
+    try {
+        new URL(str);
+        return true;
+    } catch {
+        return false;
+    }
+};
+
+const truncateText = (text: string, maxLength: number = 40): string => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '…';
+};
+
 export default function PeopleNamesTable({ data, search, onSearchChange, fullView = false }: PeopleNamesTableProps) {
     // Extract dynamic headers from raw_data if available
-    const dynamicHeaders = fullView && data.length > 0 && data[0].raw_data 
+    const dynamicHeaders = fullView && data.length > 0 && data[0].raw_data
         ? Object.keys(data[0].raw_data)
         : [];
+
+    const getColumnWidth = (header: string): string => {
+        const lowerHeader = header.toLowerCase();
+        if (lowerHeader.includes('email') || lowerHeader.includes('contact') || lowerHeader.includes('phone')) {
+            return 'w-40';
+        }
+        if (lowerHeader.includes('resume') || lowerHeader.includes('url') || lowerHeader.includes('link')) {
+            return 'max-w-xs';
+        }
+        if (lowerHeader.includes('affiliation') || lowerHeader.includes('project')) {
+            return 'w-28';
+        }
+        if (lowerHeader.includes('gender') || lowerHeader.includes('age')) {
+            return 'w-20';
+        }
+        if (lowerHeader.includes('no') || lowerHeader.includes('id')) {
+            return 'w-16';
+        }
+        return 'w-32';
+    };
 
     return (
         <div className="glass-card rounded-2xl overflow-hidden flex flex-col h-full">
@@ -48,7 +82,7 @@ export default function PeopleNamesTable({ data, search, onSearchChange, fullVie
 
             {/* Scrollable table body */}
             <div className="overflow-auto flex-1">
-                <table 
+                <table
                     className="w-full text-sm"
                     style={{ minWidth: fullView ? `${Math.max(1200, dynamicHeaders.length * 160)}px` : 'auto' }}
                 >
@@ -62,7 +96,7 @@ export default function PeopleNamesTable({ data, search, onSearchChange, fullVie
                                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
                             ) : (
                                 dynamicHeaders.map(header => (
-                                    <th key={header} className="text-left px-6 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap bg-gray-50/30">
+                                    <th key={header} className={`text-left px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap bg-gray-50/30 ${getColumnWidth(header)}`}>
                                         {header}
                                     </th>
                                 ))
@@ -100,11 +134,34 @@ export default function PeopleNamesTable({ data, search, onSearchChange, fullVie
                                                 {entry.email || '—'}
                                             </td>
                                         ) : (
-                                            dynamicHeaders.map(header => (
-                                                <td key={header} className="px-6 py-3 text-gray-500 text-xs font-medium whitespace-nowrap">
-                                                    {String(entry.raw_data?.[header] || '—')}
-                                                </td>
-                                            ))
+                                            dynamicHeaders.map(header => {
+                                                const value = entry.raw_data?.[header];
+                                                const displayValue = String(value || '—');
+                                                const isLink = value && isUrl(displayValue);
+
+                                                return (
+                                                    <td key={header} className="px-4 py-3 text-gray-500 text-xs font-medium">
+                                                        {isLink ? (
+                                                            <a
+                                                                href={displayValue}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-blue-600 hover:text-blue-700 hover:underline truncate block max-w-xs"
+                                                                title={displayValue}
+                                                            >
+                                                                {truncateText(displayValue, 35)}
+                                                            </a>
+                                                        ) : (
+                                                            <span
+                                                                className="truncate block max-w-xs"
+                                                                title={displayValue !== '—' ? displayValue : undefined}
+                                                            >
+                                                                {truncateText(displayValue, 45)}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                );
+                                            })
                                         )}
                                     </tr>
                                 );
