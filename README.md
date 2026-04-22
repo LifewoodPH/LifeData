@@ -1,62 +1,51 @@
 <div align="center">
-  <img src="public/lifedata.png" alt="LifeData Logo" width="120" />
+  <img src="public/lifedata.png" alt="LifeData Logo" width="160" />
+  
+  # LifeData Analytics Hub
+  **The Unified Intelligence Platform for Global Project Monitoring**
+  
+  [Live Deployment](https://phlifewood-lifedata.vercel.app/) • [System Architecture](#system-architecture) • [Key Features](#key-features)
 </div>
 
-# 🌌 LifeData Analytics Hub
+---
 
-[![Vercel Deployment](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://phlifewood-lifedata.vercel.app/)
-[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+## Executive Summary
+LifeData is a bespoke, high-performance analytics platform designed for the **Lifewood PH** ecosystem. It consolidates heterogeneous data sources from international projects into a unified, visually immersive intelligence hub. By leveraging modern web standards and real-time backend synchronization, LifeData provides stakeholders with actionable insights at a glance.
 
-> **Premium Global Insights Dashboard** for Lifewood's international crowdsourcing and BYU projects.
+## 💎 Design Philosophy: "Aurora Glass"
+The platform features a custom-engineered design system that prioritizes clarity, depth, and user engagement.
+
+*   **Aurora Mesh Gradient**: A proprietary animated backdrop that provides a non-static, "living" environment.
+*   **Adaptive Glassmorphism**: High-index refraction effects that ensure content legibility while maintaining a sophisticated transparency profile.
+*   **Staggered Motion System**: All UI components utilize coordinated entry animations to reduce cognitive load and provide a high-end SaaS feel.
+
+## 🚀 Technical Core
+
+### Multi-Project Intelligence
+- **Dynamic Schema Mapping**: Automatically interprets diverse table structures from global regions (PH, KE, MW, DRC, GH, etc.).
+- **Real-Time Synchronicity**: Direct integration with Supabase for sub-second data updates and live monitoring.
+- **Advanced Heuristics**: Automated demographic calculations, including age averaging, gender distribution, and institutional affiliation grouping.
+
+### Automated Data Normalization
+The system features built-in intelligence to handle data inconsistencies across international partners, including:
+- **Affiliation Consolidation**: Merging variations of "Student ID", "Student Number", and "Pathway" into a single, reliable metric.
+- **Trend Projection**: Month-over-month growth visualizations using custom-themed area charts.
+
+## 🛠 Tech Stack & Engineering
+- **Engine**: [React 18](https://reactjs.org/) & [Vite](https://vitejs.dev/)
+- **Backend Infrastructure**: [Supabase](https://supabase.com/) (PostgreSQL)
+- **Interface Engineering**: [Tailwind CSS](https://tailwindcss.com/) & Custom Design Tokens
+- **Visualizations**: [Recharts](https://recharts.org/)
+- **Iconography**: [Lucide React](https://lucide.dev/)
 
 ---
 
-## ✨ Design Philosophy: The "Aurora" Experience
-LifeData is not just a dashboard; it's a high-performance visual experience. The interface utilizes a **Modern Glassmorphism** design system paired with an interactive **Aurora background mesh**, providing a premium SaaS feel that feels alive and responsive.
-
-### 🎨 Visual Highlights:
-- **Aurora Mesh Backdrop**: Smoothly animated color gradients that create depth.
-- **Frosted Glass Components**: High-end transparency effects with subtle borders.
-- **Micro-Animations**: Staggered entrance animations and hover-glow effects on all interactive elements.
-- **Responsive Layout**: Seamless transition between desktop analytics and mobile monitoring.
+## 📈 Platform Access
+The application is continuously deployed to Vercel and is accessible at:  
+**👉 [https://phlifewood-lifedata.vercel.app/](https://phlifewood-lifedata.vercel.app/)**
 
 ---
 
-## 🚀 Core Functionalities
-
-### 📊 Dynamic Project Dashboards
-Integrated real-time data from multiple international project tables (Philippines, Kenya, Malawi, DRC, Ghana, etc.).
-- **Automated Metrics**: Instant calculation of Total Participants, Average Age, and Nationalities.
-- **Organizational Insights**: Automatic identification of top affiliations and partner groups.
-- **Trend Analysis**: Monthly join-rate visualizations to track project growth.
-
-### 🔍 Advanced Data Management
-- **Universal Search**: Lightning-fast filtering across all participant fields.
-- **Smart Normalization**: Automatically merges variations (e.g., "Student Number" vs "Student ID") for accurate statistics.
-- **Demographic Distribution**: Interactive charts for Gender and Age breakdown.
-
-### 🛡️ Administrative Security
-- **Anonymized Profiles**: Generic Admin accounts for security and privacy.
-- **Supabase Integration**: Secure, scalable backend for real-time data retrieval.
-
----
-
-## 🛠️ Tech Stack
-- **Frontend**: React 18, Vite
-- **Styling**: Tailwind CSS + Custom Vanilla CSS (Design Tokens)
-- **Database**: Supabase (Postgres)
-- **Icons**: Lucide React
-- **Charts**: Recharts (Custom themed)
-- **Animations**: CSS Keyframes + Staggered Delays
-
----
-
-## 🌐 Live Access
-Check out the production environment:  
-**[phlifewood-lifedata.vercel.app](https://phlifewood-lifedata.vercel.app/)**
-
----
-
-© 2026 Lifewood PH. All rights reserved. Powered by the Advanced Agentic Coding Team.
+<div align="center">
+  <p>© 2026 Lifewood PH | Advanced Agentic Coding Implementation</p>
+</div>
