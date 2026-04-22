@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { supabase } from './lib/supabase';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
-import Admin from './pages/Admin';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -38,10 +37,6 @@ function App() {
         <Route 
           path="/login" 
           element={!session ? <Login /> : <Navigate to="/" replace />} 
-        />
-        <Route 
-          path="/admin" 
-          element={session ? <Admin /> : <Navigate to="/login" replace />} 
         />
         <Route 
           path="/" 

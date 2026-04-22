@@ -1,7 +1,7 @@
 import React from 'react';
 import { supabase } from '../../lib/supabase';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Shield, ChevronDown, LogOut, FolderOpen } from 'lucide-react';
+import { LayoutDashboard, Shield, ChevronDown, LogOut, FolderOpen, Home } from 'lucide-react';
 import { TABLE_DASHBOARDS } from '../../config/tableDashboards';
 // @ts-ignore
 import 'flag-icons/css/flag-icons.min.css';
@@ -32,9 +32,7 @@ const FOLDERS = [
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
             </svg>
         ),
-        pinnedItems: [
-            { id: 'crowdsource-ph-overview', label: 'PH Overview', flagCode: null },
-        ],
+        pinnedItems: [],
     },
     {
         id: 'crowdsource-international',
@@ -64,28 +62,33 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     };
 
     return (
-        <aside className="sidebar-glass flex flex-col h-full w-64 min-w-[16rem] p-6">
-            {/* Logo */}
-            <div className="flex items-center gap-3 mb-10">
-                <div className="w-12 h-12 flex items-center justify-center">
-                    <img src="/lifedata.png" alt="LifeData"
-                        className="w-full h-full object-contain mix-blend-multiply filter drop-shadow-sm"
-                        onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).style.display = 'none';
-                            (e.currentTarget.nextElementSibling as HTMLElement)!.style.display = 'flex';
-                        }}
-                    />
-                    <span className="text-white font-bold text-sm hidden items-center justify-center">LD</span>
+        <aside className="w-72 h-screen sidebar-glass flex flex-col p-6 relative entrance-anim">
+            {/* Logo Section */}
+            <div className="flex items-center gap-3 mb-10 px-2">
+                <div className="w-12 h-12 bg-white/80 rounded-xl flex items-center justify-center shadow-sm overflow-hidden p-1">
+                    <img src="/lifedata.png" alt="Logo" className="w-full h-full object-contain" />
                 </div>
                 <div>
-                    <h1 className="font-bold text-lg text-gray-800 leading-tight">LifeData</h1>
-                    <p className="text-xs text-gray-400">Analytics Hub</p>
+                    <h1 className="text-xl font-black text-gray-800 tracking-tight leading-none">LifeData</h1>
+                    <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em] mt-1">Analytics Hub</p>
                 </div>
             </div>
 
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-2">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3 px-3">Menu</p>
+
+                <button
+                    onClick={() => handleNavClick('home')}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 mb-2 ${
+                        activeTab === 'home'
+                            ? 'bg-linear-to-r from-emerald-600 to-teal-800 text-white shadow-md'
+                            : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-700'
+                    }`}
+                >
+                    <Home className="w-5 h-5" />
+                    Home
+                </button>
 
                 {FOLDERS.map(folder => {
                     const configItems = TABLE_DASHBOARDS.filter(cfg => cfg.sidebarFolder === folder.id);
@@ -147,41 +150,30 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                     );
                 })}
 
-                {/* Administration */}
-                <div className="pt-4 mt-4 border-t border-white/40">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3 px-3">Administration</p>
-                    <Link to="/admin"
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                            isAdminRoute
-                                ? 'bg-linear-to-r from-emerald-600 to-teal-800 text-white shadow-md shadow-emerald-200'
-                                : 'text-gray-500 hover:text-gray-800 hover:bg-white/60'
-                        }`}
-                    >
-                        <Shield className="w-5 h-5" />
-                        Admin
-                    </Link>
-                </div>
             </nav>
 
             {/* Footer */}
-            <div className="mt-4 pt-4 border-t border-white/40 flex flex-col gap-4">
-                <div className="flex items-center justify-between px-3">
+            <div className="pt-6 mt-auto">
+                <div className="flex items-center justify-between px-3 mb-6 bg-white/40 p-3 rounded-2xl border border-white/50">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-linear-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white text-xs font-bold shadow">
-                            L
+                        <div className="w-9 h-9 rounded-xl bg-linear-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white text-xs font-bold shadow-lg">
+                            A
                         </div>
-                        <p className="text-sm font-semibold text-gray-700">Admin</p>
+                        <div className="min-w-0">
+                            <p className="text-sm font-bold text-gray-800 truncate leading-tight">Admin</p>
+                        </div>
                     </div>
                     <button onClick={() => supabase.auth.signOut()}
-                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Sign Out">
+                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Sign Out">
                         <LogOut className="w-5 h-5" />
                     </button>
                 </div>
-                <div className="mt-2 flex flex-col items-center justify-center pt-2">
-                    <div className="bg-white rounded-lg shadow-sm px-4 py-2 mb-2 flex items-center justify-center border border-gray-100 w-full hover:shadow-md transition-shadow">
-                        <img src="/lifewood.png" alt="Lifewood" className="h-6 object-contain" />
+
+                <div className="glass-card rounded-2xl p-4 border border-white/50 flex flex-col items-center gap-3">
+                    <img src="/lifewood.png" alt="Lifewood" className="h-6 object-contain opacity-80" />
+                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">
+                        Powered by <span className="text-emerald-600">Lifewood PH</span>
                     </div>
-                    <p className="text-[10px] text-teal-800 font-medium">Powered by <span className="text-amber-500">Lifewood PH</span></p>
                 </div>
             </div>
         </aside>

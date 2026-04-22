@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Users, AlertTriangle } from 'lucide-react';
+import { Users, AlertTriangle, Globe, Languages, ShieldCheck } from 'lucide-react';
 import {
     PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
     CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -9,11 +9,6 @@ import {
 import type { TableDashboardConfig } from '../../config/tableDashboards';
 
 const COLORS = ['#059669', '#7c3aed', '#0891b2', '#f59e0b', '#e11d48', '#0284c7', '#c026d3', '#16a34a'];
-
-const MARITAL_COLORS: Record<string, string> = {
-    Single: '#6366f1', Married: '#059669', Separated: '#e11d48',
-    Widowed: '#f59e0b', Other: '#9ca3af',
-};
 
 const AGE_COLORS: Record<string, string> = {
     'Under 20': '#06b6d4', '20-29': '#6366f1', '30-39': '#8b5cf6', '40+': '#ec4899',
@@ -83,16 +78,6 @@ export default function GenericTableDashboard({ config }: Props) {
     const get = (row: Record<string, string>, key: keyof typeof columns) =>
         columns[key] ? row[columns[key]!] ?? '' : '';
 
-    // Marital status
-    const maritalMap: Record<string, number> = {};
-    if (columns.maritalStatus) {
-        rows.forEach(r => {
-            const k = get(r, 'maritalStatus')?.trim() || 'Unknown';
-            maritalMap[k] = (maritalMap[k] || 0) + 1;
-        });
-    }
-    const maritalEntries = Object.entries(maritalMap).sort((a, b) => b[1] - a[1]);
-
     // Affiliation
     const affiliationMap: Record<string, number> = {};
     if (columns.affiliation) {
@@ -148,6 +133,35 @@ export default function GenericTableDashboard({ config }: Props) {
     }
     const joinTrendData = Object.entries(monthMap).sort((a, b) => a[1].sort - b[1].sort).map(([month, { count }]) => ({ month, count }));
 
+    // Language proficiency breakdown (for Crowdsource PH)
+    const languageMap: Record<string, number> = {};
+    if (columns.languages) {
+        rows.forEach(r => {
+            const raw = get(r, 'languages') || '';
+            const langs = raw.split(/[,/&]+/).map((l: string) => l.trim()).filter((l: string) => l.length > 1 && l.toLowerCase() !== 'n/a');
+            langs.forEach((l: string) => {
+                let normalized = l.charAt(0).toUpperCase() + l.slice(1).toLowerCase();
+                if (normalized === 'English language') normalized = 'English';
+                languageMap[normalized] = (languageMap[normalized] || 0) + 1;
+            });
+        });
+    }
+    const languageData = Object.entries(languageMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([name, value]) => ({ name, value }));
+
+    // Unique nationalities
+    const uniqueNationalities = columns.country ? new Set(rows.map(r => get(r, 'country')).filter(Boolean)).size : 0;
+
+
+    // Contact completeness
+    const completeContacts = (columns.email && columns.phone) ? rows.filter(r => 
+        (get(r, 'email').includes('@')) && 
+        (get(r, 'phone').length > 5)
+    ).length : 0;
+    const completenessPct = Math.round((completeContacts / (total || 1)) * 100);
+
     // Filtered table
     const filtered = rows.filter(r => {
         if (!search.trim()) return true;
@@ -156,7 +170,9 @@ export default function GenericTableDashboard({ config }: Props) {
             get(r, 'firstName').toLowerCase().includes(q) ||
             get(r, 'lastName').toLowerCase().includes(q) ||
             get(r, 'email').toLowerCase().includes(q) ||
-            get(r, 'affiliation').toLowerCase().includes(q)
+            get(r, 'affiliation').toLowerCase().includes(q) ||
+            get(r, 'address').toLowerCase().includes(q) ||
+            get(r, 'languages').toLowerCase().includes(q)
         );
     });
     const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
@@ -165,8 +181,8 @@ export default function GenericTableDashboard({ config }: Props) {
     return (
         <div className="flex-1 space-y-6 overflow-y-auto pb-8">
 
-            {/* Total + Marital Status */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Stats Header */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-emerald-50">
                         <Users className="w-5 h-5 text-emerald-600" />
@@ -176,20 +192,39 @@ export default function GenericTableDashboard({ config }: Props) {
                         <p className="text-2xl font-bold text-gray-800 leading-tight">{total}</p>
                     </div>
                 </div>
-                {maritalEntries.length > 0 && (
-                    <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex flex-col justify-center">
-                        <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-3">Marital Status Breakdown</p>
-                        <div className="flex flex-wrap gap-3">
-                            {maritalEntries.map(([status, count]) => {
-                                const color = MARITAL_COLORS[status] ?? MARITAL_COLORS.Other;
-                                return (
-                                    <div key={status} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-100 bg-gray-50/60">
-                                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                                        <span className="text-sm text-gray-600">{status}</span>
-                                        <span className="text-sm font-bold" style={{ color }}>{count}</span>
-                                    </div>
-                                );
-                            })}
+
+                {columns.country && (
+                    <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-blue-50 text-blue-600">
+                            <Globe className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Nationalities</p>
+                            <p className="text-2xl font-bold text-gray-800 leading-tight">{uniqueNationalities}</p>
+                        </div>
+                    </div>
+                )}
+
+                {languageData.length > 0 && (
+                    <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-violet-50 text-violet-600">
+                            <Languages className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Languages</p>
+                            <p className="text-2xl font-bold text-gray-800 leading-tight">{languageData.length}</p>
+                        </div>
+                    </div>
+                )}
+
+                {(columns.email && columns.phone) && (
+                    <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-amber-50 text-amber-600">
+                            <ShieldCheck className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Completeness</p>
+                            <p className="text-2xl font-bold text-gray-800 leading-tight">{completenessPct}%</p>
                         </div>
                     </div>
                 )}
@@ -223,35 +258,28 @@ export default function GenericTableDashboard({ config }: Props) {
 
                 {/* Affiliation */}
                 {affiliationData.length > 0 && (
-                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                        <h3 className="text-base font-bold text-gray-800 mb-2">Users by Affiliation</h3>
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 mb-4">
-                            {affiliationData.map((d, i) => (
-                                <span key={d.name} className="flex items-center gap-1.5 text-sm">
-                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                                    <span className="text-gray-500">{d.name}:</span>
-                                    <span className="font-bold" style={{ color: COLORS[i % COLORS.length] }}>{d.value}</span>
-                                </span>
-                            ))}
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-[350px]">
+                        <h3 className="text-base font-bold text-gray-800 mb-4">Users by Affiliation</h3>
+                        <div className="flex-1 w-full overflow-hidden">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={affiliationData} layout="vertical" barSize={18} margin={{ left: -10, right: 30, top: 0, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                                    <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                                    <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} width={100} />
+                                    <Tooltip cursor={{fill: '#f9fafb'}} formatter={(v) => [`${v} participants`, '']} />
+                                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                                        {affiliationData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
                         </div>
-                        <ResponsiveContainer width="100%" height={200}>
-                            <BarChart data={affiliationData} layout="vertical" barSize={22} margin={{ left: 10, right: 10 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                                <XAxis type="number" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                                <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} width={80} />
-                                <Tooltip formatter={(v) => [`${v} participants`, '']} />
-                                <Bar dataKey="value" radius={[0, 6, 6, 0]}>
-                                    {affiliationData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
                     </div>
                 )}
 
                 {/* Gender */}
                 {genderData.length > 0 && (
-                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                        <div className="flex items-start justify-between mb-2">
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-[350px]">
+                        <div className="flex items-start justify-between mb-6">
                             <h3 className="text-base font-bold text-gray-800">Gender Distribution</h3>
                             {genderKnown < total * 0.5 && (
                                 <span className="flex items-center gap-1 text-[10px] text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
@@ -259,30 +287,44 @@ export default function GenericTableDashboard({ config }: Props) {
                                 </span>
                             )}
                         </div>
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 mb-4">
-                            {genderData.filter(d => d.name.toLowerCase() !== 'no data').map(d => (
-                                <span key={d.name} className="flex items-center gap-1.5 text-sm">
-                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: genderColor(d.name) }} />
-                                    <span className="text-gray-500">{d.name}:</span>
-                                    <span className="font-bold" style={{ color: genderColor(d.name) }}>{d.value}</span>
-                                </span>
-                            ))}
+                        <div className="flex-1 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={genderData.filter(d => d.name.toLowerCase() !== 'no data')} barSize={45} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                                    <XAxis dataKey="name" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                                    <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                                    <Tooltip cursor={{fill: '#f9fafb'}} formatter={(v) => [`${v} participants`, 'Count']} />
+                                    <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                                        {genderData.filter(d => d.name.toLowerCase() !== 'no data').map(d => (
+                                            <Cell key={d.name} fill={genderColor(d.name)} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
                         </div>
-                        <ResponsiveContainer width="100%" height={200}>
-                            <BarChart data={genderData.filter(d => d.name.toLowerCase() !== 'no data')} barSize={50}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                                <XAxis dataKey="name" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                                <Tooltip formatter={(v) => [`${v} participants`, 'Count']} />
-                                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                                    {genderData.filter(d => d.name.toLowerCase() !== 'no data').map(d => (
-                                        <Cell key={d.name} fill={genderColor(d.name)} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
                     </div>
                 )}
+
+                {/* Languages */}
+                {languageData.length > 0 && (
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-[350px]">
+                        <h3 className="text-base font-bold text-gray-800 mb-6">Top Languages</h3>
+                        <div className="flex-1 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={languageData} layout="vertical" barSize={16} margin={{ left: -10, right: 30, top: 0, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                                    <XAxis type="number" hide />
+                                    <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} width={80} />
+                                    <Tooltip cursor={{fill: '#f9fafb'}} formatter={(v) => [`${v} users`, '']} />
+                                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                                        {languageData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                )}
+
 
                 {/* Age */}
                 {columns.age && (
@@ -338,7 +380,9 @@ export default function GenericTableDashboard({ config }: Props) {
                                 {columns.affiliation && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Affiliation</th>}
                                 {columns.email && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>}
                                 {columns.phone && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>}
-                                {columns.country && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Country</th>}
+                                {columns.country && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Nationality</th>}
+                                {columns.address && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Address</th>}
+                                {columns.languages && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Languages</th>}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
@@ -364,7 +408,9 @@ export default function GenericTableDashboard({ config }: Props) {
                                         )}
                                         {columns.email && <td className="px-4 py-3 text-gray-600 text-xs">{get(r, 'email') || '—'}</td>}
                                         {columns.phone && <td className="px-4 py-3 text-gray-600 text-xs">{get(r, 'phone') || '—'}</td>}
-                                        {columns.country && <td className="px-4 py-3 text-gray-600 text-xs">{extractCountry(get(r, 'country'))}</td>}
+                                        {columns.country && <td className="px-4 py-3 text-gray-600 text-xs">{get(r, 'country') || '—'}</td>}
+                                        {columns.address && <td className="px-4 py-3 text-gray-600 text-xs truncate max-w-[150px]">{get(r, 'address') || '—'}</td>}
+                                        {columns.languages && <td className="px-4 py-3 text-gray-600 text-xs truncate max-w-[150px]">{get(r, 'languages') || '—'}</td>}
                                     </tr>
                                 );
                             })}

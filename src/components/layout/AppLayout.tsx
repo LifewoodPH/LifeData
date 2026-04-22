@@ -7,8 +7,6 @@ interface AppLayoutProps {
     title: string;
     subtitle?: string;
     lastUpdated?: Date | null;
-    onRefresh?: () => void;
-    loading?: boolean;
     activeTab?: string;
     onTabChange?: (tab: string) => void;
 }
@@ -18,8 +16,6 @@ export default function AppLayout({
     title,
     subtitle,
     lastUpdated,
-    onRefresh,
-    loading,
     activeTab = '',
     onTabChange = () => { }
 }: AppLayoutProps) {
@@ -47,8 +43,6 @@ export default function AppLayout({
                     title={title}
                     subtitle={subtitle}
                     lastUpdated={lastUpdated}
-                    onRefresh={onRefresh}
-                    loading={loading}
                 />
 
                 <div className="flex-1 overflow-hidden flex flex-col mt-6">

@@ -6,9 +6,10 @@ export interface TableDashboardColumns {
     email?: string;
     phone?: string;
     joinedDate?: string;
-    maritalStatus?: string;
     age?: string;
     country?: string;
+    address?: string;
+    languages?: string;
 }
 
 export interface TableDashboardConfig {
@@ -48,7 +49,6 @@ export const TABLE_DASHBOARDS: TableDashboardConfig[] = [
             email: 'EMAIL ADDRESS',
             phone: 'CONTACT NUMBER',
             joinedDate: 'JOINED DATE',
-            maritalStatus: 'MARITAL STATUS',
             age: 'AGE',
         },
     },
@@ -69,7 +69,6 @@ export const TABLE_DASHBOARDS: TableDashboardConfig[] = [
             email: 'EMAIL ADDRESS',
             phone: 'CONTACT NUMBER',
             joinedDate: 'JOINED DATE',
-            maritalStatus: 'MARITAL STATUS',
             age: 'AGE',
         },
     },
@@ -90,7 +89,6 @@ export const TABLE_DASHBOARDS: TableDashboardConfig[] = [
             email: 'EMAIL ADDRESS',
             phone: 'CONTACT NUMBER',
             joinedDate: 'JOINED DATE',
-            maritalStatus: 'MARITAL STATUS',
             age: 'AGE',
         },
     },
@@ -111,7 +109,6 @@ export const TABLE_DASHBOARDS: TableDashboardConfig[] = [
             email: 'EMAIL ADDRESS',
             phone: 'CONTACT NUMBER',
             joinedDate: 'JOINED DATE',
-            maritalStatus: 'MARITAL STATUS',
             age: 'AGE',
         },
     },
@@ -132,7 +129,6 @@ export const TABLE_DASHBOARDS: TableDashboardConfig[] = [
             email: 'EMAIL ADDRESS',
             phone: 'CONTACT NUMBER',
             joinedDate: 'JOINED DATE',
-            maritalStatus: 'MARITAL STATUS',
             age: 'AGE',
         },
     },
@@ -153,7 +149,6 @@ export const TABLE_DASHBOARDS: TableDashboardConfig[] = [
             email: 'EMAIL ADDRESS',
             phone: 'CONTACT NUMBER',
             joinedDate: 'JOINED DATE',
-            maritalStatus: 'MARITAL STATUS',
             age: 'AGE',
         },
     },
@@ -194,7 +189,6 @@ export const TABLE_DASHBOARDS: TableDashboardConfig[] = [
             email: 'EMAIL ADDRESS',
             phone: 'CONTACT NUMBER',
             joinedDate: 'JOINED DATE',
-            maritalStatus: 'MARITAL STATUS',
             age: 'AGE',
         },
     },
@@ -215,7 +209,6 @@ export const TABLE_DASHBOARDS: TableDashboardConfig[] = [
             email: 'EMAIL ADDRESS',
             phone: 'CONTACT NUMBER',
             joinedDate: 'JOINED DATE',
-            maritalStatus: 'MARITAL STATUS',
             age: 'AGE',
         },
     },
@@ -236,7 +229,6 @@ export const TABLE_DASHBOARDS: TableDashboardConfig[] = [
             email: 'EMAIL ADDRESS',
             phone: 'CONTACT NUMBER',
             joinedDate: 'JOINED DATE',
-            maritalStatus: 'MARITAL STATUS',
             age: 'AGE',
         },
     },
@@ -257,7 +249,6 @@ export const TABLE_DASHBOARDS: TableDashboardConfig[] = [
             email: 'EMAIL ADDRESS',
             phone: 'CONTACT NUMBER',
             joinedDate: 'JOINED DATE',
-            maritalStatus: 'MARITAL STATUS',
             age: 'AGE',
         },
     },
@@ -278,8 +269,27 @@ export const TABLE_DASHBOARDS: TableDashboardConfig[] = [
             email: 'EMAIL ADDRESS',
             phone: 'CONTACT NUMBER',
             joinedDate: 'JOINED DATE',
-            maritalStatus: 'MARITAL STATUS',
             age: 'AGE',
+        },
+    },
+
+    {
+        tabId: 'crowdsource-ph-directory',
+        tableId: 'Crowdsource PH',
+        label: 'Crowdsource PH',
+        sidebarFolder: 'crowdsource-philippines',
+        title: 'Crowdsource PH Directory',
+        subtitle: 'Comprehensive list of all Philippines crowdsource participants',
+        columns: {
+            firstName: 'First Name',
+            lastName: 'Last Name',
+            gender: 'Gender',
+            affiliation: 'Affiliation',
+            email: 'Email',
+            phone: 'Contact Information',
+            country: 'Nationality',
+            address: 'Address',
+            languages: 'Language Proficiency',
         },
     },
 
@@ -300,7 +310,6 @@ export const TABLE_DASHBOARDS: TableDashboardConfig[] = [
     //         email: 'EMAIL ADDRESS',
     //         phone: 'CONTACT NUMBER',
     //         joinedDate: 'JOINED DATE',
-    //         maritalStatus: 'MARITAL STATUS',
     //         age: 'AGE',
     //         country: 'COUNTRY',
     //     },
