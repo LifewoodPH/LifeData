@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="public/lifedata.png" alt="LifeData Logo" width="120" />
+</div>
+
 # 🌌 LifeData Analytics Hub
 
 [![Vercel Deployment](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://phlifewood-lifedata.vercel.app/)
