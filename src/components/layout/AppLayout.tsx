@@ -20,14 +20,14 @@ export default function AppLayout({
     onTabChange = () => { }
 }: AppLayoutProps) {
     return (
-        <div className="min-h-screen bg-linear-to-br from-slate-100 via-emerald-50 to-teal-100 flex relative overflow-hidden">
+        <div className="min-h-screen aurora-bg flex relative overflow-hidden">
             {/* Ambient Video Background */}
             <video
                 autoPlay
                 loop
                 muted
                 playsInline
-                className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none mix-blend-overlay filter grayscale"
+                className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none mix-blend-overlay filter grayscale brightness-110"
             >
                 <source src="https://www.pexels.com/download/video/10922866/" type="video/mp4" />
             </video>

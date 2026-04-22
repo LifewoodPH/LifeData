@@ -80,7 +80,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
                 <button
                     onClick={() => handleNavClick('home')}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 mb-2 ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 mb-2 active-pill ${
                         activeTab === 'home'
                             ? 'bg-linear-to-r from-emerald-600 to-teal-800 text-white shadow-md'
                             : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-700'
@@ -90,7 +90,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                     Home
                 </button>
 
-                {FOLDERS.map(folder => {
+                {FOLDERS.map((folder, idx) => {
                     const configItems = TABLE_DASHBOARDS.filter(cfg => cfg.sidebarFolder === folder.id);
                     const allItems = [
                         ...folder.pinnedItems.map(p => ({ id: p.id, label: p.label, flagCode: p.flagCode })),
@@ -103,7 +103,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                     const hasActiveChild = !isAdminRoute && allItems.some(item => item.id === activeTab);
 
                     return (
-                        <div key={folder.id} className="space-y-1">
+                        <div key={folder.id} className="space-y-1 entrance-anim" style={{ animationDelay: `${(idx + 1) * 0.1}s` }}>
                             <button
                                 onClick={() => toggleFolder(folder.id)}
                                 className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group ${

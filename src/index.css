@@ -12,6 +12,7 @@ html, body, #root {
   padding: 0;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow: hidden;
 }
 
 /* ─── Glassmorphism Components ──────────────────────── */
@@ -104,7 +105,43 @@ html, body, #root {
 .delay-2 { animation-delay: 0.2s; }
 .delay-3 { animation-delay: 0.3s; }
 
-/* ─── Dark Mode ──────────────────────────────────────── */
+/* ─── Aurora Background ────────────────────────────── */
+@keyframes aurora {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.aurora-bg {
+  background: linear-gradient(-45deg, #f1f5f9, #ecfdf5, #f0f9ff, #fdf4ff);
+  background-size: 400% 400%;
+  animation: aurora 20s ease infinite;
+}
+
+/* ─── Premium Card Effects ─────────────────────────── */
+.glass-card:hover {
+  border-color: rgba(5, 150, 105, 0.4);
+  box-shadow: 0 20px 50px -12px rgba(5, 150, 105, 0.15);
+  transform: translateY(-2px);
+}
+
+.active-pill {
+  position: relative;
+}
+
+.active-pill::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 25%;
+  height: 50%;
+  width: 4px;
+  background: #059669;
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 0 10px rgba(5, 150, 105, 0.4);
+}
+
+/* ─── Animations ─────────────────────────────────────── */
 html.dark {
   color-scheme: dark;
 }

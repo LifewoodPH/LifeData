@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Users, AlertTriangle, Globe, Languages, ShieldCheck } from 'lucide-react';
+import { Users, AlertTriangle, Globe, Languages, ShieldCheck, TrendingUp, Building } from 'lucide-react';
+import React, { useMemo } from 'react';
 import {
     PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
     CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -36,6 +37,31 @@ export default function GenericTableDashboard({ config }: Props) {
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(0);
     const PAGE_SIZE = 15;
+    const total = rows.length;
+    const get = (row: Record<string, string>, key: keyof typeof columns) =>
+        columns[key] ? row[columns[key]!] ?? '' : '';
+
+    const avgAge = useMemo(() => {
+        if (!columns.age) return 0;
+        const ages = rows.map(r => parseInt(get(r, 'age'))).filter(n => !isNaN(n));
+        return ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : 0;
+    }, [rows, columns.age]);
+
+    const topAffiliation = useMemo(() => {
+        if (!columns.affiliation) return 'N/A';
+        const counts: Record<string, number> = {};
+        rows.forEach(r => {
+            let val = get(r, 'affiliation');
+            if (val) {
+                // Normalize BYU MW and similar cases
+                if (val === 'Student Number' || val === 'Student ID') val = 'Student';
+                counts[val] = (counts[val] || 0) + 1;
+            }
+        });
+        const entries = Object.entries(counts);
+        if (!entries.length) return 'N/A';
+        return entries.sort((a, b) => b[1] - a[1])[0][0];
+    }, [rows, columns.affiliation]);
 
     useEffect(() => {
         setLoading(true);
@@ -74,15 +100,13 @@ export default function GenericTableDashboard({ config }: Props) {
         </div>
     );
 
-    const total = rows.length;
-    const get = (row: Record<string, string>, key: keyof typeof columns) =>
-        columns[key] ? row[columns[key]!] ?? '' : '';
 
     // Affiliation
     const affiliationMap: Record<string, number> = {};
     if (columns.affiliation) {
         rows.forEach(r => {
-            const raw = get(r, 'affiliation')?.trim();
+            let raw = get(r, 'affiliation')?.trim();
+            if (raw === 'Student Number' || raw === 'Student ID') raw = 'Student';
             const k = (raw && raw.length > 1 && raw.toLowerCase() !== 'n/a') ? raw : 'Other';
             affiliationMap[k] = (affiliationMap[k] || 0) + 1;
         });
@@ -155,12 +179,7 @@ export default function GenericTableDashboard({ config }: Props) {
     const uniqueNationalities = columns.country ? new Set(rows.map(r => get(r, 'country')).filter(Boolean)).size : 0;
 
 
-    // Contact completeness
-    const completeContacts = (columns.email && columns.phone) ? rows.filter(r => 
-        (get(r, 'email').includes('@')) && 
-        (get(r, 'phone').length > 5)
-    ).length : 0;
-    const completenessPct = Math.round((completeContacts / (total || 1)) * 100);
+
 
     // Filtered table
     const filtered = rows.filter(r => {
@@ -205,26 +224,26 @@ export default function GenericTableDashboard({ config }: Props) {
                     </div>
                 )}
 
-                {languageData.length > 0 && (
-                    <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-violet-50 text-violet-600">
-                            <Languages className="w-5 h-5" />
+                {columns.age && (
+                    <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md hover:-translate-y-1">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-blue-50 text-blue-600">
+                            <TrendingUp className="w-5 h-5" />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Languages</p>
-                            <p className="text-2xl font-bold text-gray-800 leading-tight">{languageData.length}</p>
+                            <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Avg. Age</p>
+                            <p className="text-2xl font-bold text-gray-800 leading-tight">{avgAge}</p>
                         </div>
                     </div>
                 )}
 
-                {(columns.email && columns.phone) && (
-                    <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-amber-50 text-amber-600">
-                            <ShieldCheck className="w-5 h-5" />
+                {columns.affiliation && (
+                    <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md hover:-translate-y-1">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-purple-50 text-purple-600">
+                            <Building className="w-5 h-5" />
                         </div>
-                        <div>
-                            <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Completeness</p>
-                            <p className="text-2xl font-bold text-gray-800 leading-tight">{completenessPct}%</p>
+                        <div className="min-w-0">
+                            <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Top Affiliation</p>
+                            <p className="text-lg font-bold text-gray-800 leading-tight truncate" title={topAffiliation}>{topAffiliation}</p>
                         </div>
                     </div>
                 )}
