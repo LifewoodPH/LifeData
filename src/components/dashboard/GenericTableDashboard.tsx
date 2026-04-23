@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Users, AlertTriangle, Globe, TrendingUp, Building, Search, Filter, X, ChevronDown } from 'lucide-react';
+import { Users, AlertTriangle, Globe, TrendingUp, Building, Search, Filter, X, ChevronDown, ChevronsUpDown, ChevronUp } from 'lucide-react';
 import React, { useMemo } from 'react';
 import {
     PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
@@ -28,6 +28,56 @@ function ageGroup(age: number) {
     return '40+';
 }
 
+// ─── Loading Skeleton ────────────────────────────────────────────────────────
+function Skeleton({ className }: { className?: string }) {
+    return <div className={`bg-slate-200 rounded animate-pulse ${className ?? ''}`} />;
+}
+
+function LoadingSkeleton() {
+    return (
+        <div className="flex-1 space-y-5 pb-8">
+            {/* Stat cards skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[...Array(4)].map((_, i) => (
+                    <div key={i} className="flat-card p-5 flex items-center gap-4">
+                        <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
+                        <div className="flex-1 space-y-2">
+                            <Skeleton className="h-3 w-24" />
+                            <Skeleton className="h-6 w-16" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+            {/* Chart skeleton */}
+            <div className="flat-card p-6">
+                <Skeleton className="h-4 w-40 mb-4" />
+                <Skeleton className="h-40 w-full" />
+            </div>
+            {/* Table skeleton */}
+            <div className="flat-card overflow-hidden">
+                <div className="px-5 py-4 border-b border-slate-100 flex justify-between">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-8 w-64" />
+                </div>
+                <div className="p-4 space-y-3">
+                    {[...Array(8)].map((_, i) => (
+                        <div key={i} className="flex gap-4">
+                            <Skeleton className="h-4 w-6" />
+                            <Skeleton className="h-4 w-28" />
+                            <Skeleton className="h-4 w-28" />
+                            <Skeleton className="h-4 w-20" />
+                            <Skeleton className="h-4 flex-1" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+type SortDir = 'asc' | 'desc';
+type ColKey = 'firstName' | 'lastName' | 'gender' | 'affiliation' | 'email' | 'phone' | 'country' | 'address' | 'languages' | 'age';
+
 interface Props { config: TableDashboardConfig; }
 
 export default function GenericTableDashboard({ config }: Props) {
@@ -36,7 +86,11 @@ export default function GenericTableDashboard({ config }: Props) {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(0);
-    const PAGE_SIZE = 15;
+    const [pageSize, setPageSize] = useState(15);
+
+    // Sorting
+    const [sortCol, setSortCol] = useState<ColKey | null>(null);
+    const [sortDir, setSortDir] = useState<SortDir>('asc');
 
     // Filters
     const [filterGender, setFilterGender] = useState('');
@@ -77,7 +131,6 @@ export default function GenericTableDashboard({ config }: Props) {
         return entries.sort((a, b) => b[1] - a[1])[0][0];
     }, [rows, columns.affiliation]);
 
-    // Unique values for dropdowns
     const genderOptions = useMemo(() => {
         if (!columns.gender) return [];
         const s = new Set<string>();
@@ -103,12 +156,13 @@ export default function GenericTableDashboard({ config }: Props) {
         return Array.from(s).sort();
     }, [rows, columns.country]);
 
-
     useEffect(() => {
         setLoading(true);
         setRows([]);
         setSearch('');
         setPage(0);
+        setSortCol(null);
+        setSortDir('asc');
         resetFilters();
 
         const cols = Object.values(columns).filter(Boolean) as string[];
@@ -131,7 +185,6 @@ export default function GenericTableDashboard({ config }: Props) {
         })();
     }, [tableId]);
 
-    // Close country dropdown on outside click
     useEffect(() => {
         const handler = (e: MouseEvent) => {
             if (countryRef.current && !countryRef.current.contains(e.target as Node))
@@ -154,23 +207,45 @@ export default function GenericTableDashboard({ config }: Props) {
         setPage(0);
     }
 
-    const activeFilterCount = [
-        filterGender, filterAffiliation, filterAgeGroup,
-        filterDateFrom, filterDateTo,
-    ].filter(Boolean).length +
+    function handleSort(col: ColKey) {
+        if (sortCol === col) {
+            setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortCol(col);
+            setSortDir('asc');
+        }
+        setPage(0);
+    }
+
+    function SortIcon({ col }: { col: ColKey }) {
+        if (sortCol !== col) return <ChevronsUpDown className="w-3 h-3 text-gray-400 inline ml-1" />;
+        return sortDir === 'asc'
+            ? <ChevronUp className="w-3 h-3 text-emerald-600 inline ml-1" />
+            : <ChevronDown className="w-3 h-3 text-emerald-600 inline ml-1" />;
+    }
+
+    // Active filter count
+    const activeFilterCount = [filterGender, filterAffiliation, filterAgeGroup, filterDateFrom, filterDateTo]
+        .filter(Boolean).length +
         (filterCountries.length > 0 ? 1 : 0) +
         (filterHasEmail !== 'all' ? 1 : 0) +
         (filterHasPhone !== 'all' ? 1 : 0) +
         (search.trim() ? 1 : 0);
 
-    if (loading) return (
-        <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-                <div className="w-12 h-12 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-sm text-gray-400 font-medium">Loading data...</p>
-            </div>
-        </div>
-    );
+    // Filter chips data
+    const filterChips = [
+        ...(search.trim() ? [{ label: `Search: "${search}"`, onRemove: () => { setSearch(''); setPage(0); } }] : []),
+        ...(filterGender ? [{ label: `Gender: ${filterGender}`, onRemove: () => { setFilterGender(''); setPage(0); } }] : []),
+        ...(filterAffiliation ? [{ label: `Affiliation: ${filterAffiliation}`, onRemove: () => { setFilterAffiliation(''); setPage(0); } }] : []),
+        ...(filterAgeGroup ? [{ label: `Age: ${filterAgeGroup}`, onRemove: () => { setFilterAgeGroup(''); setPage(0); } }] : []),
+        ...(filterCountries.length > 0 ? [{ label: `${filterCountries.length} countr${filterCountries.length > 1 ? 'ies' : 'y'}`, onRemove: () => { setFilterCountries([]); setPage(0); } }] : []),
+        ...(filterDateFrom ? [{ label: `From: ${filterDateFrom}`, onRemove: () => { setFilterDateFrom(''); setPage(0); } }] : []),
+        ...(filterDateTo ? [{ label: `To: ${filterDateTo}`, onRemove: () => { setFilterDateTo(''); setPage(0); } }] : []),
+        ...(filterHasEmail !== 'all' ? [{ label: filterHasEmail === 'yes' ? 'Has Email' : 'No Email', onRemove: () => { setFilterHasEmail('all'); setPage(0); } }] : []),
+        ...(filterHasPhone !== 'all' ? [{ label: filterHasPhone === 'yes' ? 'Has Phone' : 'No Phone', onRemove: () => { setFilterHasPhone('all'); setPage(0); } }] : []),
+    ];
+
+    if (loading) return <LoadingSkeleton />;
 
     // Chart data
     const affiliationMap: Record<string, number> = {};
@@ -237,7 +312,7 @@ export default function GenericTableDashboard({ config }: Props) {
     const languageData = Object.entries(languageMap).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([name, value]) => ({ name, value }));
     const uniqueNationalities = columns.country ? new Set(rows.map(r => get(r, 'country')).filter(Boolean)).size : 0;
 
-    // Apply all filters
+    // Apply filters
     const filtered = rows.filter(r => {
         if (search.trim()) {
             const q = search.toLowerCase();
@@ -251,8 +326,7 @@ export default function GenericTableDashboard({ config }: Props) {
             if (!match) return false;
         }
         if (filterGender) {
-            const g = get(r, 'gender')?.trim();
-            if (g?.toLowerCase() !== filterGender.toLowerCase()) return false;
+            if (get(r, 'gender')?.trim().toLowerCase() !== filterGender.toLowerCase()) return false;
         }
         if (filterAffiliation) {
             let v = get(r, 'affiliation')?.trim();
@@ -264,8 +338,7 @@ export default function GenericTableDashboard({ config }: Props) {
             if (isNaN(age) || ageGroup(age) !== filterAgeGroup) return false;
         }
         if (filterCountries.length > 0 && columns.country) {
-            const c = get(r, 'country')?.trim();
-            if (!filterCountries.includes(c)) return false;
+            if (!filterCountries.includes(get(r, 'country')?.trim())) return false;
         }
         if (filterDateFrom && columns.joinedDate) {
             const d = new Date(get(r, 'joinedDate')?.trim());
@@ -288,11 +361,24 @@ export default function GenericTableDashboard({ config }: Props) {
         return true;
     });
 
-    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-    const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+    // Apply sorting
+    const sorted = sortCol ? [...filtered].sort((a, b) => {
+        const av = get(a, sortCol)?.toLowerCase() ?? '';
+        const bv = get(b, sortCol)?.toLowerCase() ?? '';
+        if (sortCol === 'age') {
+            const an = parseInt(av), bn = parseInt(bv);
+            if (!isNaN(an) && !isNaN(bn)) return sortDir === 'asc' ? an - bn : bn - an;
+        }
+        return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    }) : filtered;
 
+    const totalPages = Math.ceil(sorted.length / pageSize);
+    const paginated = sorted.slice(page * pageSize, (page + 1) * pageSize);
 
     const selectClass = "text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 text-gray-700";
+
+    const thClass = (col: ColKey) =>
+        `px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none hover:text-emerald-600 hover:bg-emerald-50/50 transition-colors whitespace-nowrap`;
 
     return (
         <div className="flex-1 space-y-5 overflow-y-auto custom-scrollbar pb-8">
@@ -460,16 +546,15 @@ export default function GenericTableDashboard({ config }: Props) {
             {/* Participants Table */}
             <div className="flat-card overflow-hidden">
 
-                {/* Table toolbar */}
+                {/* Toolbar */}
                 <div className="px-5 py-4 border-b border-slate-100 space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
                             <Users className="w-4 h-4 text-emerald-500" />
                             Participants
-                            <span className="text-xs font-normal text-gray-400">{filtered.length.toLocaleString()} of {total.toLocaleString()}</span>
+                            <span className="text-xs font-normal text-gray-400">{sorted.length.toLocaleString()} of {total.toLocaleString()}</span>
                         </h3>
                         <div className="flex items-center gap-2 flex-wrap">
-                            {/* Search */}
                             <div className="relative">
                                 <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                                 <input
@@ -480,7 +565,6 @@ export default function GenericTableDashboard({ config }: Props) {
                                     className="text-sm border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 w-72 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 bg-white"
                                 />
                             </div>
-                            {/* Filter toggle */}
                             <button
                                 onClick={() => setShowFilters(f => !f)}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${showFilters ? 'bg-emerald-600 text-white border-emerald-600' : 'border-slate-200 text-gray-600 hover:bg-slate-50'}`}
@@ -493,23 +577,32 @@ export default function GenericTableDashboard({ config }: Props) {
                                     </span>
                                 )}
                             </button>
-                            {/* Clear all */}
                             {activeFilterCount > 0 && (
-                                <button
-                                    onClick={resetFilters}
-                                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-red-500 hover:bg-red-50 border border-red-100 transition-colors"
-                                >
+                                <button onClick={resetFilters}
+                                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-red-500 hover:bg-red-50 border border-red-100 transition-colors">
                                     <X className="w-3 h-3" /> Clear
                                 </button>
                             )}
                         </div>
                     </div>
 
+                    {/* Filter chips */}
+                    {filterChips.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                            {filterChips.map(chip => (
+                                <span key={chip.label} className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-xs font-medium">
+                                    {chip.label}
+                                    <button onClick={chip.onRemove} className="hover:text-emerald-900 transition-colors">
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                    )}
+
                     {/* Filter panel */}
                     {showFilters && (
                         <div className="pt-3 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-
-                            {/* Gender */}
                             {columns.gender && genderOptions.length > 0 && (
                                 <div>
                                     <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Gender</label>
@@ -519,8 +612,6 @@ export default function GenericTableDashboard({ config }: Props) {
                                     </select>
                                 </div>
                             )}
-
-                            {/* Affiliation */}
                             {columns.affiliation && affiliationOptions.length > 0 && (
                                 <div>
                                     <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Affiliation</label>
@@ -530,8 +621,6 @@ export default function GenericTableDashboard({ config }: Props) {
                                     </select>
                                 </div>
                             )}
-
-                            {/* Age Group */}
                             {columns.age && (
                                 <div>
                                     <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Age Group</label>
@@ -541,16 +630,10 @@ export default function GenericTableDashboard({ config }: Props) {
                                     </select>
                                 </div>
                             )}
-
-
-                            {/* Country multi-select */}
                             {columns.country && countryOptions.length > 0 && (
                                 <div ref={countryRef} className="relative">
                                     <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Nationality</label>
-                                    <button
-                                        onClick={() => setCountryDropdownOpen(o => !o)}
-                                        className={selectClass + ' w-full flex items-center justify-between'}
-                                    >
+                                    <button onClick={() => setCountryDropdownOpen(o => !o)} className={selectClass + ' w-full flex items-center justify-between'}>
                                         <span className="truncate">{filterCountries.length === 0 ? 'All' : `${filterCountries.length} selected`}</span>
                                         <ChevronDown className="w-3 h-3 shrink-0 ml-1 text-gray-400" />
                                     </button>
@@ -562,8 +645,7 @@ export default function GenericTableDashboard({ config }: Props) {
                                                         onChange={e => {
                                                             setFilterCountries(prev => e.target.checked ? [...prev, c] : prev.filter(x => x !== c));
                                                             setPage(0);
-                                                        }}
-                                                        className="accent-emerald-600" />
+                                                        }} className="accent-emerald-600" />
                                                     <span className="text-xs text-gray-700">{c}</span>
                                                 </label>
                                             ))}
@@ -571,26 +653,18 @@ export default function GenericTableDashboard({ config }: Props) {
                                     )}
                                 </div>
                             )}
-
-                            {/* Date range */}
                             {columns.joinedDate && (
                                 <div>
                                     <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Joined From</label>
-                                    <input type="date" value={filterDateFrom}
-                                        onChange={e => { setFilterDateFrom(e.target.value); setPage(0); }}
-                                        className={selectClass + ' w-full'} />
+                                    <input type="date" value={filterDateFrom} onChange={e => { setFilterDateFrom(e.target.value); setPage(0); }} className={selectClass + ' w-full'} />
                                 </div>
                             )}
                             {columns.joinedDate && (
                                 <div>
                                     <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Joined To</label>
-                                    <input type="date" value={filterDateTo}
-                                        onChange={e => { setFilterDateTo(e.target.value); setPage(0); }}
-                                        className={selectClass + ' w-full'} />
+                                    <input type="date" value={filterDateTo} onChange={e => { setFilterDateTo(e.target.value); setPage(0); }} className={selectClass + ' w-full'} />
                                 </div>
                             )}
-
-                            {/* Has email */}
                             {columns.email && (
                                 <div>
                                     <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Has Email</label>
@@ -601,8 +675,6 @@ export default function GenericTableDashboard({ config }: Props) {
                                     </select>
                                 </div>
                             )}
-
-                            {/* Has phone */}
                             {columns.phone && (
                                 <div>
                                     <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Has Phone</label>
@@ -623,15 +695,15 @@ export default function GenericTableDashboard({ config }: Props) {
                         <thead>
                             <tr className="text-left">
                                 <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
-                                {columns.firstName && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">First Name</th>}
-                                {columns.lastName && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Name</th>}
-                                {columns.gender && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Gender</th>}
-                                {columns.affiliation && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Affiliation</th>}
-                                {columns.email && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>}
-                                {columns.phone && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>}
-                                {columns.country && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Nationality</th>}
-                                {columns.address && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Address</th>}
-                                {columns.languages && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Languages</th>}
+                                {columns.firstName && <th className={thClass('firstName')} onClick={() => handleSort('firstName')}>First Name <SortIcon col="firstName" /></th>}
+                                {columns.lastName && <th className={thClass('lastName')} onClick={() => handleSort('lastName')}>Last Name <SortIcon col="lastName" /></th>}
+                                {columns.gender && <th className={thClass('gender')} onClick={() => handleSort('gender')}>Gender <SortIcon col="gender" /></th>}
+                                {columns.affiliation && <th className={thClass('affiliation')} onClick={() => handleSort('affiliation')}>Affiliation <SortIcon col="affiliation" /></th>}
+                                {columns.email && <th className={thClass('email')} onClick={() => handleSort('email')}>Email <SortIcon col="email" /></th>}
+                                {columns.phone && <th className={thClass('phone')} onClick={() => handleSort('phone')}>Contact <SortIcon col="phone" /></th>}
+                                {columns.country && <th className={thClass('country')} onClick={() => handleSort('country')}>Nationality <SortIcon col="country" /></th>}
+                                {columns.address && <th className={thClass('address')} onClick={() => handleSort('address')}>Address <SortIcon col="address" /></th>}
+                                {columns.languages && <th className={thClass('languages')} onClick={() => handleSort('languages')}>Languages <SortIcon col="languages" /></th>}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -646,7 +718,7 @@ export default function GenericTableDashboard({ config }: Props) {
                                 const affil = get(r, 'affiliation');
                                 return (
                                     <tr key={i} className="hover:bg-emerald-50/30 transition-colors">
-                                        <td className="px-4 py-2.5 text-gray-400 text-xs">{page * PAGE_SIZE + i + 1}</td>
+                                        <td className="px-4 py-2.5 text-gray-400 text-xs">{page * pageSize + i + 1}</td>
                                         {columns.firstName && <td className="px-4 py-2.5 font-medium text-gray-800">{get(r, 'firstName') || '—'}</td>}
                                         {columns.lastName && <td className="px-4 py-2.5 text-gray-600">{get(r, 'lastName') || '—'}</td>}
                                         {columns.gender && (
@@ -674,11 +746,20 @@ export default function GenericTableDashboard({ config }: Props) {
                 </div>
 
                 {/* Pagination */}
-                {totalPages > 1 && (
-                    <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div className="flex items-center gap-2">
                         <p className="text-xs text-gray-400">
-                            Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} of {filtered.length.toLocaleString()}
+                            {sorted.length > 0 ? `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, sorted.length)} of ${sorted.length.toLocaleString()}` : '0 records'}
                         </p>
+                        <select
+                            value={pageSize}
+                            onChange={e => { setPageSize(Number(e.target.value)); setPage(0); }}
+                            className="text-xs border border-slate-200 rounded-md px-1.5 py-1 bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-emerald-300"
+                        >
+                            {[15, 25, 50].map(n => <option key={n} value={n}>{n} / page</option>)}
+                        </select>
+                    </div>
+                    {totalPages > 1 && (
                         <div className="flex gap-1">
                             <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
                                 className="px-3 py-1 text-xs rounded-md border border-slate-200 text-gray-600 disabled:opacity-30 hover:bg-white transition-colors">Prev</button>
@@ -694,8 +775,8 @@ export default function GenericTableDashboard({ config }: Props) {
                             <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page === totalPages - 1}
                                 className="px-3 py-1 text-xs rounded-md border border-slate-200 text-gray-600 disabled:opacity-30 hover:bg-white transition-colors">Next</button>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );
