@@ -4,7 +4,7 @@
   # LifeData Analytics Hub
   **The Unified Intelligence Platform for Global Project Monitoring**
   
-  [Live Deployment](https://phlifewood-lifedata.vercel.app/) • [System Architecture](#system-architecture) • [Key Features](#key-features)
+  [Live Deployment](https://lifedata-lifewoodph.vercel.app/) • [System Architecture](#system-architecture) • [Key Features](#key-features)
 </div>
 
 ---
@@ -42,7 +42,7 @@ The system features built-in intelligence to handle data inconsistencies across 
 
 ## 📈 Platform Access
 The application is continuously deployed to Vercel and is accessible at:  
-**👉 [https://phlifewood-lifedata.vercel.app/](https://phlifewood-lifedata.vercel.app/)**
+**👉 [https://lifedata-lifewoodph.vercel.app/](https://lifedata-lifewoodph.vercel.app/)**
 
 ---
 
