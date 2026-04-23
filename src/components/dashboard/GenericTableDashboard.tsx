@@ -474,10 +474,10 @@ export default function GenericTableDashboard({ config }: Props) {
                                 <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                                 <input
                                     type="text"
-                                    placeholder="Search name, email..."
+                                    placeholder="Search by name, email, affiliation..."
                                     value={search}
                                     onChange={e => { setSearch(e.target.value); setPage(0); }}
-                                    className="text-sm border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 w-48 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 bg-white"
+                                    className="text-sm border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 w-72 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 bg-white"
                                 />
                             </div>
                             {/* Filter toggle */}
