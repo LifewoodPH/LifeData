@@ -15,35 +15,59 @@ html, body, #root {
   overflow: hidden;
 }
 
-/* ─── Glassmorphism Components ──────────────────────── */
-.glass-card {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 10px 40px -10px rgba(5, 150, 105, 0.1), 0 1px 4px rgba(0,0,0,0.02);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* ─── Flat Card (replaces glassmorphism) ────────────── */
+.flat-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
+.flat-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.09);
+}
+
+/* Accent left-border variants */
+.card-accent-emerald { border-left: 4px solid #059669; }
+.card-accent-sky      { border-left: 4px solid #0ea5e9; }
+.card-accent-violet   { border-left: 4px solid #7c3aed; }
+.card-accent-amber    { border-left: 4px solid #d97706; }
+.card-accent-rose     { border-left: 4px solid #e11d48; }
+.card-accent-teal     { border-left: 4px solid #0d9488; }
+
+/* Keep glass-card as alias for flat-card for backward compatibility */
+.glass-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.glass-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.09);
+  transform: translateY(-1px);
+}
+
+/* ─── Sidebar ────────────────────────────────────────── */
 .sidebar-glass {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
-  border-right: 1px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 10px 0 50px -10px rgba(5, 150, 105, 0.12);
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04);
 }
 
 /* ─── Select Inputs ─────────────────────────────────── */
 .select-glass {
   padding: 0.5rem 0.875rem;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.6);
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
   color: #374151;
   font-size: 0.875rem;
   outline: none;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -53,9 +77,8 @@ html, body, #root {
 }
 
 .select-glass:focus {
-  border-color: #a5b4fc;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-  background-color: rgba(255, 255, 255, 0.85);
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
 }
 
 /* ─── Status Badges ──────────────────────────────────── */
@@ -70,61 +93,33 @@ html, body, #root {
   white-space: nowrap;
 }
 
-.badge-active {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.badge-inactive {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.badge-neutral {
-  background: #f1f5f9;
-  color: #475569;
-}
+.badge-active   { background: #d1fae5; color: #065f46; }
+.badge-inactive { background: #fee2e2; color: #991b1b; }
+.badge-neutral  { background: #f1f5f9; color: #475569; }
 
 /* ─── Scrollbar ──────────────────────────────────────── */
 .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(5, 150, 105, 0.15); border-radius: 999px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(5, 150, 105, 0.35); }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
 /* ─── Animations ─────────────────────────────────────── */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.entrance-anim {
-  animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}
+.entrance-anim { animation: fadeInUp 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.delay-1 { animation-delay: 0.07s; }
+.delay-2 { animation-delay: 0.14s; }
+.delay-3 { animation-delay: 0.21s; }
 
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
-
-/* ─── Aurora Background ────────────────────────────── */
-@keyframes aurora {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
+/* ─── App Background ────────────────────────────────── */
 .aurora-bg {
-  background: linear-gradient(-45deg, #f1f5f9, #ecfdf5, #f0f9ff, #fdf4ff);
-  background-size: 400% 400%;
-  animation: aurora 20s ease infinite;
+  background: #f8fafc;
 }
 
-/* ─── Premium Card Effects ─────────────────────────── */
-.glass-card:hover {
-  border-color: rgba(5, 150, 105, 0.4);
-  box-shadow: 0 20px 50px -12px rgba(5, 150, 105, 0.15);
-  transform: translateY(-2px);
-}
-
+/* ─── Sidebar active-pill indicator ─────────────────── */
 .active-pill {
   position: relative;
 }
@@ -132,16 +127,27 @@ html, body, #root {
 .active-pill::before {
   content: '';
   position: absolute;
-  left: -12px;
-  top: 25%;
-  height: 50%;
-  width: 4px;
+  left: 0;
+  top: 20%;
+  height: 60%;
+  width: 3px;
   background: #059669;
-  border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 10px rgba(5, 150, 105, 0.4);
+  border-radius: 0 3px 3px 0;
 }
 
-/* ─── Animations ─────────────────────────────────────── */
+/* ─── Table zebra striping ──────────────────────────── */
+.zebra-table tbody tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+.zebra-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f1f5f9;
+}
+
+/* ─── Dark mode ──────────────────────────────────────── */
 html.dark {
   color-scheme: dark;
 }
@@ -151,26 +157,34 @@ html.dark #root {
   background: #0f172a;
 }
 
+html.dark .flat-card,
 html.dark .glass-card {
-  background: rgba(30, 41, 59, 0.8);
-  border-color: rgba(51, 65, 85, 0.8);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
   color: #e2e8f0;
 }
 
 html.dark .sidebar-glass {
-  background: rgba(15, 23, 42, 0.92);
-  border-right-color: rgba(51, 65, 85, 0.6);
+  background: #0f172a;
+  border-right-color: #1e293b;
+}
+
+html.dark .aurora-bg {
+  background: #0f172a;
 }
 
 html.dark .select-glass {
-  background: rgba(30, 41, 59, 0.7);
-  border-color: rgba(51, 65, 85, 0.7);
+  background: #1e293b;
+  border-color: #334155;
   color: #e2e8f0;
 }
 
-html.dark .badge-active { background: #064e3b; color: #6ee7b7; }
-html.dark .badge-inactive { background: #7f1d1d; color: #fca5a5; }
+html.dark .zebra-table tbody tr:nth-child(even) { background-color: #162032; }
+html.dark .zebra-table thead th { background: #1e293b; }
+
+html.dark .badge-active  { background: #064e3b; color: #6ee7b7; }
+html.dark .badge-inactive{ background: #7f1d1d; color: #fca5a5; }
 html.dark .badge-neutral { background: #1e293b; color: #94a3b8; }
 
 html.dark .text-gray-800 { color: #e2e8f0 !important; }
@@ -178,25 +192,12 @@ html.dark .text-gray-700 { color: #cbd5e1 !important; }
 html.dark .text-gray-600 { color: #94a3b8 !important; }
 html.dark .text-gray-500 { color: #64748b !important; }
 html.dark .text-gray-400 { color: #475569 !important; }
-html.dark .hover\:bg-white\/60:hover { background: rgba(30,41,59,0.6) !important; }
-html.dark .hover\:bg-white\/80:hover { background: rgba(30,41,59,0.8) !important; }
-html.dark .bg-white\/50 { background: rgba(30,41,59,0.5) !important; }
-html.dark .bg-white\/60 { background: rgba(30,41,59,0.6) !important; }
-html.dark .bg-white\/70 { background: rgba(30,41,59,0.7) !important; }
-html.dark .bg-white\/80 { background: rgba(30,41,59,0.8) !important; }
-html.dark .bg-white\/90 { background: rgba(30,41,59,0.9) !important; }
-html.dark .bg-white\/30 { background: rgba(30,41,59,0.3) !important; }
-html.dark .bg-white\/10 { background: rgba(30,41,59,0.1) !important; }
-html.dark .border-white\/40 { border-color: rgba(51,65,85,0.4) !important; }
-html.dark .border-white\/60 { border-color: rgba(51,65,85,0.6) !important; }
-html.dark .border-gray-100 { border-color: rgba(51,65,85,0.6) !important; }
-html.dark .bg-gray-100 { background: #1e293b !important; }
-html.dark .bg-white { background: #1e293b !important; }
+html.dark .bg-white      { background: #1e293b !important; }
+html.dark .bg-gray-50    { background: #162032 !important; }
+html.dark .bg-gray-100   { background: #1e293b !important; }
+html.dark .border-gray-100 { border-color: #334155 !important; }
+html.dark .border-gray-200 { border-color: #334155 !important; }
 html.dark .bg-emerald-50 { background: #064e3b !important; }
-html.dark .bg-indigo-50 { background: #1e1b4b !important; }
-html.dark .bg-amber-50 { background: #431407 !important; }
-html.dark .bg-rose-100 { background: #4c0519 !important; }
 html.dark .text-emerald-700 { color: #34d399 !important; }
-html.dark .text-indigo-700 { color: #a5b4fc !important; }
-html.dark .text-amber-600 { color: #fbbf24 !important; }
-html.dark .text-amber-500 { color: #f59e0b !important; }
+html.dark .text-indigo-700  { color: #a5b4fc !important; }
+html.dark .text-amber-600   { color: #fbbf24 !important; }

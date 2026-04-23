@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { TABLE_DASHBOARDS } from '../../config/tableDashboards';
-import { LayoutDashboard, Users, Globe, ArrowRight, Database } from 'lucide-react';
+import { Users, Globe, ArrowRight, Database, TrendingUp } from 'lucide-react';
 
 export default function HomeContent({ onTabChange }: { onTabChange: (tab: string) => void }) {
     const [totalParticipants, setTotalParticipants] = useState(0);
@@ -18,44 +18,41 @@ export default function HomeContent({ onTabChange }: { onTabChange: (tab: string
                         return count || 0;
                     })
                 );
-                const total = results.reduce((acc, val) => acc + val, 0);
-                setTotalParticipants(total);
+                setTotalParticipants(results.reduce((acc, val) => acc + val, 0));
             } catch (err) {
                 console.error('Error fetching totals:', err);
             } finally {
                 setLoading(false);
             }
         };
-
         fetchTotals();
     }, []);
 
     return (
-        <div className="flex-1 space-y-10 pb-10 overflow-y-auto custom-scrollbar pr-2 entrance-anim">
-            {/* Hero Section */}
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-linear-to-br from-emerald-600 to-teal-900 p-10 md:p-16 text-white shadow-2xl shadow-emerald-200 entrance-anim delay-1">
-                <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-                <div className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-64 h-64 bg-emerald-400/20 rounded-full blur-2xl" />
-                
-                <div className="relative z-10 max-w-2xl">
-                    <h2 className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight leading-tight">
-                        Welcome to the <br />
-                        <span className="text-emerald-300">LifeData</span> Hub
+        <div className="flex-1 space-y-6 pb-8 overflow-y-auto custom-scrollbar pr-1 entrance-anim">
+
+            {/* Hero */}
+            <div className="relative overflow-hidden rounded-2xl bg-emerald-700 p-8 md:p-12 text-white">
+                <div className="absolute inset-0 bg-linear-to-br from-emerald-600 to-emerald-900 opacity-80" />
+                <div className="relative z-10 max-w-xl">
+                    <p className="text-xs font-semibold text-emerald-300 uppercase tracking-widest mb-3">Research Analytics Platform</p>
+                    <h2 className="text-3xl md:text-4xl font-extrabold mb-3 tracking-tight leading-tight">
+                        Welcome to <span className="text-emerald-300">LifeData</span>
                     </h2>
-                    <p className="text-lg md:text-xl text-emerald-50/80 mb-10 leading-relaxed">
-                        Access real-time analytics, participant trends, and geographic insights across all project workstreams in one unified dashboard.
+                    <p className="text-sm md:text-base text-emerald-100/80 mb-8 leading-relaxed">
+                        Real-time analytics, participant trends, and geographic insights across all project workstreams — in one unified dashboard.
                     </p>
-                    <div className="flex flex-wrap gap-4">
-                        <button 
+                    <div className="flex flex-wrap gap-3">
+                        <button
                             onClick={() => onTabChange('byu-overview')}
-                            className="bg-white text-emerald-800 px-8 py-3.5 rounded-2xl font-bold hover:bg-emerald-50 transition-all flex items-center gap-2 group shadow-lg shadow-emerald-900/20"
+                            className="bg-white text-emerald-800 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-50 transition-colors flex items-center gap-2 group"
                         >
                             BYU Overview
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                         </button>
-                        <button 
+                        <button
                             onClick={() => onTabChange('crowdsource-ph-directory')}
-                            className="bg-emerald-400/20 text-white border border-white/20 backdrop-blur-sm px-8 py-3.5 rounded-2xl font-bold hover:bg-emerald-400/30 transition-all flex items-center gap-2"
+                            className="border border-white/30 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-white/10 transition-colors"
                         >
                             Crowdsource PH
                         </button>
@@ -63,67 +60,57 @@ export default function HomeContent({ onTabChange }: { onTabChange: (tab: string
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="glass-card rounded-3xl p-8 border border-white/40 shadow-xl relative overflow-hidden group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 entrance-anim delay-2">
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <Users className="w-24 h-24 text-emerald-800" />
+            {/* Stat Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 entrance-anim delay-1">
+                <div className="flat-card card-accent-emerald p-6 flex items-center gap-4">
+                    <div className="w-11 h-11 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0">
+                        <Users className="w-5 h-5 text-emerald-600" />
                     </div>
-                    <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 text-emerald-600 shadow-sm">
-                        <Users className="w-6 h-6" />
-                    </div>
-                    <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-1">Total Participants</h3>
-                    <div className="flex items-baseline gap-2">
-                        <p className="text-4xl font-black text-gray-800">
-                            {loading ? '...' : totalParticipants.toLocaleString()}
+                    <div>
+                        <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Total Participants</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-0.5">
+                            {loading ? '—' : totalParticipants.toLocaleString()}
                         </p>
+                        <p className="text-xs text-gray-400 mt-0.5">Across all active projects</p>
                     </div>
-                    <p className="text-sm text-gray-400 mt-2">Aggregate across all active projects</p>
                 </div>
 
-                <div className="glass-card rounded-3xl p-8 border border-white/40 shadow-xl relative overflow-hidden group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 entrance-anim delay-3">
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <Database className="w-24 h-24 text-blue-800" />
+                <div className="flat-card card-accent-sky p-6 flex items-center gap-4 entrance-anim delay-2">
+                    <div className="w-11 h-11 bg-sky-50 rounded-lg flex items-center justify-center shrink-0">
+                        <Database className="w-5 h-5 text-sky-600" />
                     </div>
-                    <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 text-blue-600 shadow-sm">
-                        <Database className="w-6 h-6" />
+                    <div>
+                        <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Active Datasets</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-0.5">{TABLE_DASHBOARDS.length}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Country-specific tables synced</p>
                     </div>
-                    <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-1">Active Datasets</h3>
-                    <p className="text-4xl font-black text-gray-800">{TABLE_DASHBOARDS.length}</p>
-                    <p className="text-sm text-gray-400 mt-2">Country-specific tables synced</p>
                 </div>
 
-                <div className="glass-card rounded-3xl p-8 border border-white/40 shadow-xl relative overflow-hidden group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <Globe className="w-24 h-24 text-teal-800" />
+                <div className="flat-card card-accent-violet p-6 flex items-center gap-4 entrance-anim delay-3">
+                    <div className="w-11 h-11 bg-violet-50 rounded-lg flex items-center justify-center shrink-0">
+                        <Globe className="w-5 h-5 text-violet-600" />
                     </div>
-                    <div className="w-12 h-12 bg-teal-50 rounded-2xl flex items-center justify-center mb-6 text-teal-600 shadow-sm">
-                        <Globe className="w-6 h-6" />
+                    <div>
+                        <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Regions</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-0.5">12+</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Global data distribution</p>
                     </div>
-                    <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-1">Regions</h3>
-                    <p className="text-4xl font-black text-gray-800">12+</p>
-                    <p className="text-sm text-gray-400 mt-2">Global data distribution</p>
                 </div>
             </div>
 
-            {/* Welcome Message / Help */}
-            <div className="glass-card rounded-3xl p-10 border border-white/40 shadow-xl">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center">
-                        <LayoutDashboard className="w-4 h-4 text-amber-500" />
-                    </div>
-                    <h3 className="font-bold text-gray-800">Getting Started</h3>
+            {/* Getting Started */}
+            <div className="flat-card p-6 entrance-anim delay-2">
+                <div className="flex items-center gap-2 mb-4">
+                    <TrendingUp className="w-4 h-4 text-emerald-600" />
+                    <h3 className="font-semibold text-gray-800">Getting Started</h3>
                 </div>
-                <div className="grid md:grid-cols-2 gap-10">
-                    <div className="space-y-4">
-                        <p className="text-gray-600 leading-relaxed">
-                            Navigate through different project datasets using the sidebar. The <span className="font-bold text-gray-800">BYU</span> section contains regional demographics and trends, while <span className="font-bold text-gray-800">Crowdsource Philippines</span> offers a detailed directory of participants and specialized skills.
-                        </p>
-                    </div>
-                    <div className="space-y-4">
-                        <p className="text-gray-600 leading-relaxed">
-                            Every dashboard is equipped with dynamic search and visualization tools. Access to specific data exports and administrative features depends on your account permissions.
-                        </p>
-                    </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                        Navigate through project datasets using the sidebar. The <span className="font-semibold text-gray-800">BYU</span> section contains regional demographics and trends, while <span className="font-semibold text-gray-800">Crowdsource Philippines</span> offers a detailed participant directory.
+                    </p>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                        Every dashboard includes dynamic search and visualization tools. Access to data exports and admin features depends on your account permissions.
+                    </p>
                 </div>
             </div>
         </div>

@@ -21,31 +21,19 @@ export default function AppLayout({
 }: AppLayoutProps) {
     return (
         <div className="min-h-screen aurora-bg flex relative overflow-hidden">
-            {/* Ambient Video Background */}
-            <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none mix-blend-overlay filter grayscale brightness-110"
-            >
-                <source src="https://www.pexels.com/download/video/10922866/" type="video/mp4" />
-            </video>
-
-            {/* Sidebar Container */}
-            <div className="relative z-10">
+            {/* Sidebar */}
+            <div className="relative z-10 shrink-0">
                 <Sidebar activeTab={activeTab} onTabChange={onTabChange} />
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col p-6 min-w-0 relative z-10 h-screen overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
                 <Header
                     title={title}
                     subtitle={subtitle}
                     lastUpdated={lastUpdated}
                 />
-
-                <div className="flex-1 overflow-hidden flex flex-col mt-6">
+                <div className="flex-1 overflow-hidden flex flex-col px-6 pb-6">
                     {children}
                 </div>
             </div>
