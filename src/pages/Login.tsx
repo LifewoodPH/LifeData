@@ -150,7 +150,7 @@ export default function Login() {
                         </h3>
 
                         {/* Floating Interface Elements Mockup */}
-                        <div className="mt-16 ml-auto mr-0 w-3/4 bg-emerald-50/95 backdrop-blur-md rounded-2xl p-6 shadow-2xl border border-white/20 relative rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
+                        <div className="mt-16 ml-auto mr-0 w-3/4 bg-emerald-50/95 backdrop-blur-md rounded-2xl p-6 shadow-2xl border border-white/20 relative -rotate-2 hover:rotate-0 transition-transform duration-500">
                             <div className="w-8 h-8 mb-8">
                                 <img src="/lifedata.png" alt="" className="w-full h-full object-contain opacity-60" />
                             </div>
