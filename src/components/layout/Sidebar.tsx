@@ -37,7 +37,7 @@ const FOLDERS = [
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     const location = useLocation();
     const navigate = useNavigate();
-    const [openFolders, setOpenFolders] = React.useState<Record<string, boolean>>({ byu: true });
+    const [openFolders, setOpenFolders] = React.useState<Record<string, boolean>>({});
     const [phAffiliations, setPhAffiliations] = React.useState<string[]>([]);
 
     React.useEffect(() => {
