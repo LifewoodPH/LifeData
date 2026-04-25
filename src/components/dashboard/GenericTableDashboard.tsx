@@ -250,6 +250,7 @@ export default function GenericTableDashboard({ config }: Props) {
             let val = get(r, 'affiliation');
             if (val) {
                 if (val === 'Student Number' || val === 'Student ID') val = 'Student';
+                if (val === 'Member') val = 'Church Member';
                 counts[val] = (counts[val] || 0) + 1;
             }
         });
@@ -271,6 +272,7 @@ export default function GenericTableDashboard({ config }: Props) {
         rows.forEach(r => {
             let v = get(r, 'affiliation')?.trim();
             if (v === 'Student Number' || v === 'Student ID') v = 'Student';
+                if (v === 'Member') v = 'Church Member';
             if (v && v.toLowerCase() !== 'n/a') s.add(v);
         });
         return Array.from(s).sort();
@@ -393,11 +395,12 @@ export default function GenericTableDashboard({ config }: Props) {
         rows.forEach(r => {
             let raw = get(r, 'affiliation')?.trim();
             if (raw === 'Student Number' || raw === 'Student ID') raw = 'Student';
+            if (raw === 'Member') raw = 'Church Member';
             const k = (raw && raw.length > 1 && raw.toLowerCase() !== 'n/a') ? raw : 'Other';
             affiliationMap[k] = (affiliationMap[k] || 0) + 1;
         });
     }
-    const affiliationData = Object.entries(affiliationMap).sort((a, b) => b[1] - a[1]).map(([name, value]) => ({ name, value }));
+    const affiliationData = Object.entries(affiliationMap).filter(([, count]) => count > 1).sort((a, b) => b[1] - a[1]).map(([name, value]) => ({ name, value }));
 
     const genderMap: Record<string, number> = {};
     if (columns.gender) {
@@ -441,7 +444,8 @@ export default function GenericTableDashboard({ config }: Props) {
     if (columns.languages) {
         rows.forEach(r => {
             const raw = get(r, 'languages') || '';
-            const langs = raw.split(/[,/&]+/).map((l: string) => l.trim()).filter((l: string) => l.length > 1 && l.toLowerCase() !== 'n/a');
+            const LANG_EXCLUDE = new Set(['n/a', 'none', 'nil', 'multi-language', 'multilanguage', 'multi language', 'multiple', 'multiple languages', 'others', 'other']);
+            const langs = raw.split(/[,/&]+|\s+and\s+/i).map((l: string) => l.trim()).filter((l: string) => l.length > 1 && !LANG_EXCLUDE.has(l.toLowerCase()));
             langs.forEach((l: string) => {
                 let normalized = l.charAt(0).toUpperCase() + l.slice(1).toLowerCase();
                 if (normalized === 'English language') normalized = 'English';
@@ -480,6 +484,7 @@ export default function GenericTableDashboard({ config }: Props) {
         if (filterAffiliation) {
             let v = get(r, 'affiliation')?.trim();
             if (v === 'Student Number' || v === 'Student ID') v = 'Student';
+                if (v === 'Member') v = 'Church Member';
             if (v !== filterAffiliation) return false;
         }
         if (filterAgeGroup && columns.age) {

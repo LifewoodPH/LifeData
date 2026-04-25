@@ -59,6 +59,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             all.forEach(r => {
                 let v = r['Affiliation']?.trim();
                 if (v === 'Student Number' || v === 'Student ID') v = 'Student';
+                if (v === 'Member') v = 'Church Member';
                 if (v && v.toLowerCase() !== 'n/a') counts[v] = (counts[v] || 0) + 1;
             });
             const names = Object.keys(counts);
