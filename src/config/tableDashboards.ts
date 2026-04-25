@@ -289,7 +289,6 @@ export const TABLE_DASHBOARDS: TableDashboardConfig[] = [
             email: 'Email',
             phone: 'Contact Information',
             country: 'Nationality',
-            address: 'Address',
             languages: 'Language Proficiency',
         },
     },

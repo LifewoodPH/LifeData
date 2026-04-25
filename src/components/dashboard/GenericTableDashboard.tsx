@@ -201,6 +201,7 @@ interface Props { config: TableDashboardConfig; }
 
 export default function GenericTableDashboard({ config }: Props) {
     const { tableId, columns } = config;
+    const showAffiliation = !!columns.affiliation && !config.preFilter;
     const [rows, setRows] = useState<Record<string, string>[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -342,6 +343,8 @@ export default function GenericTableDashboard({ config }: Props) {
         setFilterHasEmail('all');
         setFilterHasPhone('all');
         setSearch('');
+        setSortCol(null);
+        setSortDir('asc');
         setPage(0);
     }
 
@@ -367,7 +370,8 @@ export default function GenericTableDashboard({ config }: Props) {
         (filterCountries.length > 0 ? 1 : 0) +
         (filterHasEmail !== 'all' ? 1 : 0) +
         (filterHasPhone !== 'all' ? 1 : 0) +
-        (search.trim() ? 1 : 0);
+        (search.trim() ? 1 : 0) +
+        (sortCol === 'firstName' ? 1 : 0);
 
     const filterChips = [
         ...(search.trim() ? [{ label: `Search: "${search}"`, onRemove: () => { setSearch(''); setPage(0); } }] : []),
@@ -563,7 +567,7 @@ export default function GenericTableDashboard({ config }: Props) {
                             </div>
                         </div>
                     )}
-                    {columns.affiliation && (
+                    {showAffiliation && (
                         <div className="flat-card card-accent-amber p-5 flex items-center gap-4">
                             <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-amber-50">
                                 <Building className="w-5 h-5 text-amber-600" />
@@ -771,6 +775,22 @@ export default function GenericTableDashboard({ config }: Props) {
                         {/* Filter panel */}
                         {showFilters && (
                             <div className="pt-3 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                                <div>
+                                    <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Name Order</label>
+                                    <select
+                                        value={sortCol === 'firstName' ? sortDir : ''}
+                                        onChange={e => {
+                                            if (e.target.value === '') { setSortCol(null); }
+                                            else { setSortCol('firstName'); setSortDir(e.target.value as SortDir); }
+                                            setPage(0);
+                                        }}
+                                        className={selectClass + ' w-full'}
+                                    >
+                                        <option value="">Default</option>
+                                        <option value="asc">A → Z</option>
+                                        <option value="desc">Z → A</option>
+                                    </select>
+                                </div>
                                 {columns.gender && genderOptions.length > 0 && (
                                     <div>
                                         <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Gender</label>
@@ -780,7 +800,7 @@ export default function GenericTableDashboard({ config }: Props) {
                                         </select>
                                     </div>
                                 )}
-                                {columns.affiliation && affiliationOptions.length > 0 && (
+                                {showAffiliation && affiliationOptions.length > 0 && (
                                     <div>
                                         <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Affiliation</label>
                                         <select value={filterAffiliation} onChange={e => { setFilterAffiliation(e.target.value); setPage(0); }} className={selectClass + ' w-full'}>
@@ -866,7 +886,7 @@ export default function GenericTableDashboard({ config }: Props) {
                                     {columns.firstName && <th className={thClass('firstName')} onClick={() => handleSort('firstName')}>First Name <SortIcon col="firstName" /></th>}
                                     {columns.lastName && <th className={thClass('lastName')} onClick={() => handleSort('lastName')}>Last Name <SortIcon col="lastName" /></th>}
                                     {columns.gender && <th className={thClass('gender')} onClick={() => handleSort('gender')}>Gender <SortIcon col="gender" /></th>}
-                                    {columns.affiliation && <th className={thClass('affiliation')} onClick={() => handleSort('affiliation')}>Affiliation <SortIcon col="affiliation" /></th>}
+                                    {showAffiliation && <th className={thClass('affiliation')} onClick={() => handleSort('affiliation')}>Affiliation <SortIcon col="affiliation" /></th>}
                                     {columns.email && <th className={thClass('email')} onClick={() => handleSort('email')}>Email <SortIcon col="email" /></th>}
                                     {columns.phone && <th className={thClass('phone')} onClick={() => handleSort('phone')}>Contact <SortIcon col="phone" /></th>}
                                     {columns.country && <th className={thClass('country')} onClick={() => handleSort('country')}>Nationality <SortIcon col="country" /></th>}
@@ -897,7 +917,7 @@ export default function GenericTableDashboard({ config }: Props) {
                                                         : <span className="text-gray-300 text-xs">—</span>}
                                                 </td>
                                             )}
-                                            {columns.affiliation && (
+                                            {showAffiliation && (
                                                 <td className="px-4 py-2.5">
                                                     <span className="px-2 py-0.5 bg-violet-50 text-violet-700 rounded-md text-xs font-medium border border-violet-100">{affil || '—'}</span>
                                                 </td>
