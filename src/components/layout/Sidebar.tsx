@@ -1,8 +1,9 @@
 import React from 'react';
 import { supabase } from '../../lib/supabase';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ChevronDown, FolderOpen, Home, LogOut } from 'lucide-react';
+import { LayoutDashboard, ChevronDown, FolderOpen, Home, LogOut, Star } from 'lucide-react';
 import { TABLE_DASHBOARDS } from '../../config/tableDashboards';
+import { getAffilFlagCode, AFFIL_ICON_OVERRIDES } from '../../lib/affilFlags';
 // @ts-ignore
 import 'flag-icons/css/flag-icons.min.css';
 
@@ -22,7 +23,9 @@ const FOLDERS = [
     {
         id: 'crowdsource-philippines',
         label: 'Crowdsource Philippines',
-        pinnedItems: [] as { id: string; label: string; flagCode: string | null }[],
+        pinnedItems: [
+            { id: 'crowdsource-ph-overview', label: 'Crowdsource PH Overview', flagCode: null },
+        ] as { id: string; label: string; flagCode: string | null }[],
     },
     {
         id: 'crowdsource-international',
@@ -35,6 +38,35 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     const location = useLocation();
     const navigate = useNavigate();
     const [openFolders, setOpenFolders] = React.useState<Record<string, boolean>>({ byu: true });
+    const [phAffiliations, setPhAffiliations] = React.useState<string[]>([]);
+
+    React.useEffect(() => {
+        (async () => {
+            const PAGE = 1000;
+            let all: Record<string, string>[] = [];
+            let from = 0;
+            while (true) {
+                const { data, error } = await supabase
+                    .from('Crowdsource PH')
+                    .select('"Affiliation"')
+                    .range(from, from + PAGE - 1);
+                if (error || !data || data.length === 0) break;
+                all = [...all, ...(data as Record<string, string>[])];
+                if (data.length < PAGE) break;
+                from += PAGE;
+            }
+            const counts: Record<string, number> = {};
+            all.forEach(r => {
+                let v = r['Affiliation']?.trim();
+                if (v === 'Student Number' || v === 'Student ID') v = 'Student';
+                if (v && v.toLowerCase() !== 'n/a') counts[v] = (counts[v] || 0) + 1;
+            });
+            const names = Object.keys(counts);
+            const pinned = names.filter(n => n === 'Little Boss');
+            const rest = names.filter(n => n !== 'Little Boss').sort((a, b) => a.localeCompare(b));
+            setPhAffiliations([...pinned, ...rest]);
+        })();
+    }, []);
 
     const isAdminRoute = location.pathname === '/admin';
 
@@ -77,15 +109,29 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
                 {FOLDERS.map((folder, idx) => {
                     const configItems = TABLE_DASHBOARDS.filter(cfg => cfg.sidebarFolder === folder.id);
+
+                    const nationalityItems = folder.id === 'crowdsource-philippines'
+                        ? phAffiliations.map((aff: string) => ({
+                            id: `crowdsource-ph-aff-${encodeURIComponent(aff)}`,
+                            label: aff,
+                            flagCode: getAffilFlagCode(aff),
+                        }))
+                        : [];
+
                     const allItems = [
                         ...folder.pinnedItems.map(p => ({ id: p.id, label: p.label, flagCode: p.flagCode })),
-                        ...configItems.map(cfg => ({ id: cfg.tabId, label: cfg.label, flagCode: cfg.flagCode ?? null })),
+                        ...(folder.id === 'crowdsource-philippines'
+                            ? nationalityItems
+                            : configItems.map(cfg => ({ id: cfg.tabId, label: cfg.label, flagCode: cfg.flagCode ?? null }))),
                     ];
 
                     if (allItems.length === 0) return null;
 
                     const isOpen = openFolders[folder.id];
-                    const hasActiveChild = !isAdminRoute && allItems.some(item => item.id === activeTab);
+                    const hasActiveChild = !isAdminRoute && (
+                        allItems.some(item => item.id === activeTab) ||
+                        (folder.id === 'crowdsource-philippines' && activeTab.startsWith('crowdsource-ph-aff-'))
+                    );
 
                     return (
                         <div key={folder.id} className="entrance-anim" style={{ animationDelay: `${(idx + 1) * 0.07}s` }}>
@@ -120,7 +166,9 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                                                 <span className={`shrink-0 ${isActive ? 'text-emerald-500' : 'text-gray-400'}`}>
                                                     {item.flagCode
                                                         ? <span className={`fi fi-${item.flagCode} inline-block w-4 h-auto rounded-sm`} />
-                                                        : <LayoutDashboard className="w-3.5 h-3.5" />
+                                                        : AFFIL_ICON_OVERRIDES[item.label] === 'Star'
+                                                            ? <Star className="w-3.5 h-3.5" />
+                                                            : <LayoutDashboard className="w-3.5 h-3.5" />
                                                     }
                                                 </span>
                                                 <span className="leading-tight wrap-break-word min-w-0">{item.label}</span>

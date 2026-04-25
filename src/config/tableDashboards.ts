@@ -21,6 +21,7 @@ export interface TableDashboardConfig {
     title: string;
     subtitle: string;
     columns: TableDashboardColumns;
+    preFilter?: { column: string; value: string }; // pre-filter rows by a specific column/value
 }
 
 // ─────────────────────────────────────────────────────────────

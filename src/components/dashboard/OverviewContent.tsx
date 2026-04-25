@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { TABLE_DASHBOARDS } from '../../config/tableDashboards';
+import { getAffilFlagCode, AFFIL_ICON_OVERRIDES } from '../../lib/affilFlags';
+import { Star } from 'lucide-react';
 // @ts-ignore
 import 'flag-icons/css/flag-icons.min.css';
 
@@ -26,6 +28,44 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        setLoading(true);
+        setRows([]);
+
+        if (folder === 'crowdsource-philippines') {
+            (async () => {
+                const PAGE = 1000;
+                let all: Record<string, string>[] = [];
+                let from = 0;
+                while (true) {
+                    const { data, error } = await supabase
+                        .from('Crowdsource PH')
+                        .select('"Affiliation"')
+                        .range(from, from + PAGE - 1);
+                    if (error || !data || data.length === 0) break;
+                    all = [...all, ...(data as Record<string, string>[])];
+                    if (data.length < PAGE) break;
+                    from += PAGE;
+                }
+                const counts: Record<string, number> = {};
+                all.forEach(r => {
+                    let v = r['Affiliation']?.trim();
+                    if (v === 'Student Number' || v === 'Student ID') v = 'Student';
+                    if (v && v.toLowerCase() !== 'n/a') counts[v] = (counts[v] || 0) + 1;
+                });
+                const result: CountryRow[] = Object.entries(counts)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([name, count]) => ({
+                        tabId: `crowdsource-ph-aff-${encodeURIComponent(name)}`,
+                        label: name,
+                        flagCode: getAffilFlagCode(name) ?? '',
+                        count,
+                    }));
+                setRows(result);
+                setLoading(false);
+            })();
+            return;
+        }
+
         const configs = folder === 'BYU'
             ? TABLE_DASHBOARDS.filter(c => c.sidebarFolder === 'byu')
             : TABLE_DASHBOARDS;
@@ -64,11 +104,14 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
     const avg = rows.length ? Math.round(total / rows.length) : 0;
     const maxCount = largest?.count ?? 1;
 
+    const isCrowdsourcePH = folder === 'crowdsource-philippines';
+    const groupLabel = isCrowdsourcePH ? 'Affiliations' : 'Countries';
+
     const statCards = [
-        { label: 'Total Participants', value: total.toLocaleString(), sub: 'across all countries', accent: 'card-accent-emerald', iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
-        { label: 'Countries', value: String(rows.length), sub: 'active in project', accent: 'card-accent-sky', iconBg: 'bg-sky-50', iconColor: 'text-sky-600' },
-        { label: 'Largest Country', value: largest ? largest.count.toLocaleString() : '—', sub: largest?.label ?? '', accent: 'card-accent-violet', iconBg: 'bg-violet-50', iconColor: 'text-violet-600' },
-        { label: 'Avg per Country', value: avg.toLocaleString(), sub: 'participants average', accent: 'card-accent-amber', iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
+        { label: 'Total Participants', value: total.toLocaleString(), sub: isCrowdsourcePH ? 'across all affiliations' : 'across all countries', accent: 'card-accent-emerald', iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
+        { label: groupLabel, value: String(rows.length), sub: 'represented in directory', accent: 'card-accent-sky', iconBg: 'bg-sky-50', iconColor: 'text-sky-600' },
+        { label: `Largest ${isCrowdsourcePH ? 'Affiliation' : 'Country'}`, value: largest ? largest.count.toLocaleString() : '—', sub: largest?.label ?? '', accent: 'card-accent-violet', iconBg: 'bg-violet-50', iconColor: 'text-violet-600' },
+        { label: `Avg per ${isCrowdsourcePH ? 'Affiliation' : 'Country'}`, value: avg.toLocaleString(), sub: 'participants average', accent: 'card-accent-amber', iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
     ];
 
     return (
@@ -89,11 +132,11 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
             <div className="flat-card p-6">
                 <div className="flex items-center justify-between mb-5">
                     <div>
-                        <h3 className="text-base font-bold text-gray-800">Participants by Country</h3>
+                        <h3 className="text-base font-bold text-gray-800">Participants by {isCrowdsourcePH ? 'Affiliation' : 'Country'}</h3>
                         <p className="text-xs text-gray-400 mt-0.5">Sorted by participant count</p>
                     </div>
                     <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-md border border-emerald-100">
-                        {rows.length} countries
+                        {rows.length} {isCrowdsourcePH ? 'affiliations' : 'countries'}
                     </span>
                 </div>
 
@@ -109,7 +152,9 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
                                     <span className="text-xs text-gray-300 w-4 text-right font-medium">{index + 1}</span>
                                     {item.flagCode
                                         ? <span className={`fi fi-${item.flagCode} inline-block w-4 h-auto rounded-sm shadow-sm shrink-0`} />
-                                        : <span className="w-4 h-3 bg-gray-200 rounded-sm shrink-0" />
+                                        : AFFIL_ICON_OVERRIDES[item.label] === 'Star'
+                                            ? <Star className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                                            : <span className="w-4 h-3 bg-gray-200 rounded-sm shrink-0" />
                                     }
                                     <span className="text-sm font-medium text-gray-700 truncate">{item.label}</span>
                                 </div>

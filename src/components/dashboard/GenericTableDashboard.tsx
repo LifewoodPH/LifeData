@@ -300,8 +300,11 @@ export default function GenericTableDashboard({ config }: Props) {
             let all: Record<string, string>[] = [];
             let from = 0;
             while (true) {
-                const { data, error } = await supabase
-                    .from(tableId).select(selectStr).range(from, from + PAGE - 1);
+                let q = supabase.from(tableId).select(selectStr).range(from, from + PAGE - 1);
+                if (config.preFilter) {
+                    q = q.eq(config.preFilter.column, config.preFilter.value);
+                }
+                const { data, error } = await q;
                 if (error || !data || data.length === 0) break;
                 all = [...all, ...(data as unknown as Record<string, string>[])];
                 if (data.length < PAGE) break;
@@ -310,7 +313,7 @@ export default function GenericTableDashboard({ config }: Props) {
             setRows(all);
             setLoading(false);
         })();
-    }, [tableId]);
+    }, [tableId, config.preFilter?.value]);
 
     useEffect(() => {
         const handler = (e: MouseEvent) => {
@@ -444,6 +447,15 @@ export default function GenericTableDashboard({ config }: Props) {
     }
     const languageData = Object.entries(languageMap).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([name, value]) => ({ name, value }));
     const uniqueNationalities = columns.country ? new Set(rows.map(r => get(r, 'country')).filter(Boolean)).size : 0;
+
+    const nationalityMap: Record<string, number> = {};
+    if (columns.country) {
+        rows.forEach(r => {
+            const n = get(r, 'country')?.trim();
+            if (n) nationalityMap[n] = (nationalityMap[n] || 0) + 1;
+        });
+    }
+    const nationalityData = Object.entries(nationalityMap).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([name, value]) => ({ name, value }));
 
     // Apply filters
     const filtered = rows.filter(r => {
@@ -589,23 +601,44 @@ export default function GenericTableDashboard({ config }: Props) {
 
                 {/* Charts Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                    {affiliationData.length > 0 && (
-                        <div className="flat-card p-6 flex flex-col h-80">
-                            <h3 className="text-sm font-bold text-gray-800 mb-4">Users by Affiliation</h3>
-                            <div className="flex-1 w-full overflow-hidden">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={affiliationData} layout="vertical" barSize={14} margin={{ left: -10, right: 30, top: 0, bottom: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                                        <XAxis type="number" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
-                                        <YAxis dataKey="name" type="category" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} width={90} />
-                                        <Tooltip cursor={{ fill: '#f8fafc' }} formatter={(v) => [`${v} participants`, '']} />
-                                        <Bar dataKey="value" radius={[0, 3, 3, 0]}>
-                                            {affiliationData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
+                    {columns.country ? (
+                        nationalityData.length > 0 && (
+                            <div className="flat-card p-6 flex flex-col h-80">
+                                <h3 className="text-sm font-bold text-gray-800 mb-4">Top Nationalities</h3>
+                                <div className="flex-1 w-full overflow-hidden">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={nationalityData} layout="vertical" barSize={14} margin={{ left: -10, right: 30, top: 0, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                                            <XAxis type="number" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
+                                            <YAxis dataKey="name" type="category" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} width={90} />
+                                            <Tooltip cursor={{ fill: '#f8fafc' }} formatter={(v) => [`${v} participants`, '']} />
+                                            <Bar dataKey="value" radius={[0, 3, 3, 0]}>
+                                                {nationalityData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
-                        </div>
+                        )
+                    ) : (
+                        affiliationData.length > 0 && (
+                            <div className="flat-card p-6 flex flex-col h-80">
+                                <h3 className="text-sm font-bold text-gray-800 mb-4">Users by Affiliation</h3>
+                                <div className="flex-1 w-full overflow-hidden">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={affiliationData} layout="vertical" barSize={14} margin={{ left: -10, right: 30, top: 0, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                                            <XAxis type="number" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
+                                            <YAxis dataKey="name" type="category" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} width={90} />
+                                            <Tooltip cursor={{ fill: '#f8fafc' }} formatter={(v) => [`${v} participants`, '']} />
+                                            <Bar dataKey="value" radius={[0, 3, 3, 0]}>
+                                                {affiliationData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        )
                     )}
                     {genderData.length > 0 && (
                         <div className="flat-card p-6 flex flex-col h-80">
