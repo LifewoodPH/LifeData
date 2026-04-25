@@ -10,6 +10,8 @@ import 'flag-icons/css/flag-icons.min.css';
 interface SidebarProps {
     activeTab: string;
     onTabChange: (tab: string) => void;
+    openFolders?: Record<string, boolean>;
+    onFoldersChange?: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
 }
 
 const FOLDERS = [
@@ -34,10 +36,12 @@ const FOLDERS = [
     },
 ];
 
-export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+export default function Sidebar({ activeTab, onTabChange, openFolders: openFoldersProp, onFoldersChange }: SidebarProps) {
     const location = useLocation();
     const navigate = useNavigate();
-    const [openFolders, setOpenFolders] = React.useState<Record<string, boolean>>({});
+    const [openFoldersLocal, setOpenFoldersLocal] = React.useState<Record<string, boolean>>({});
+    const openFolders = openFoldersProp ?? openFoldersLocal;
+    const setOpenFolders = onFoldersChange ?? setOpenFoldersLocal;
     const [phAffiliations, setPhAffiliations] = React.useState<string[]>([]);
 
     React.useEffect(() => {

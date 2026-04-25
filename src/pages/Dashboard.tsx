@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import OverviewContent from '../components/dashboard/OverviewContent';
 import GenericTableDashboard from '../components/dashboard/GenericTableDashboard';
@@ -7,6 +7,16 @@ import { TABLE_DASHBOARDS } from '../config/tableDashboards';
 
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState('home');
+    const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({});
+
+    const openFolder = useCallback((folderId: string) => {
+        setOpenFolders(prev => ({ ...prev, [folderId]: true }));
+    }, []);
+
+    const handleTabChange = useCallback((tab: string) => {
+        if (tab === 'home') setOpenFolders({});
+        setActiveTab(tab);
+    }, []);
 
     const crowdsourcePhBase = TABLE_DASHBOARDS.find(cfg => cfg.tabId === 'crowdsource-ph-directory')!;
 
@@ -27,7 +37,7 @@ export default function Dashboard() {
         : (tabTitles[activeTab] ?? { title: 'Dashboard', subtitle: '' });
 
     const renderContent = () => {
-        if (activeTab === 'home') return <HomeContent onTabChange={setActiveTab} />;
+        if (activeTab === 'home') return <HomeContent onTabChange={handleTabChange} onOpenFolder={openFolder} />;
         if (activeTab === 'byu-overview') return <OverviewContent folder="BYU" />;
         if (activeTab === 'crowdsource-ph-overview') return <OverviewContent folder="crowdsource-philippines" />;
         if (activeNat && crowdsourcePhBase) {
@@ -44,7 +54,9 @@ export default function Dashboard() {
             subtitle={metadata.subtitle}
             lastUpdated={null}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
+            openFolders={openFolders}
+            onFoldersChange={setOpenFolders}
         >
             {renderContent()}
         </AppLayout>

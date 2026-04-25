@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { TABLE_DASHBOARDS } from '../../config/tableDashboards';
 import { Users, Globe, ArrowRight, Database, TrendingUp } from 'lucide-react';
 
-export default function HomeContent({ onTabChange }: { onTabChange: (tab: string) => void }) {
+export default function HomeContent({ onTabChange, onOpenFolder }: { onTabChange: (tab: string) => void; onOpenFolder?: (folderId: string) => void }) {
     const [totalParticipants, setTotalParticipants] = useState(0);
     const [loading, setLoading] = useState(true);
 
@@ -44,14 +44,14 @@ export default function HomeContent({ onTabChange }: { onTabChange: (tab: string
                     </p>
                     <div className="flex flex-wrap gap-3">
                         <button
-                            onClick={() => onTabChange('byu-overview')}
+                            onClick={() => { onTabChange('byu-overview'); onOpenFolder?.('byu'); }}
                             className="bg-white text-emerald-800 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-50 transition-colors flex items-center gap-2 group"
                         >
                             BYU Overview
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                         </button>
                         <button
-                            onClick={() => onTabChange('crowdsource-ph-directory')}
+                            onClick={() => { onTabChange('crowdsource-ph-overview'); onOpenFolder?.('crowdsource-philippines'); }}
                             className="border border-white/30 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-white/10 transition-colors"
                         >
                             Crowdsource PH

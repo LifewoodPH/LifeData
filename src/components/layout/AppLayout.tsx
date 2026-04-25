@@ -9,6 +9,8 @@ interface AppLayoutProps {
     lastUpdated?: Date | null;
     activeTab?: string;
     onTabChange?: (tab: string) => void;
+    openFolders?: Record<string, boolean>;
+    onFoldersChange?: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
 }
 
 export default function AppLayout({
@@ -17,13 +19,20 @@ export default function AppLayout({
     subtitle,
     lastUpdated,
     activeTab = '',
-    onTabChange = () => { }
+    onTabChange = () => { },
+    openFolders,
+    onFoldersChange,
 }: AppLayoutProps) {
     return (
         <div className="min-h-screen aurora-bg flex relative overflow-hidden">
             {/* Sidebar */}
             <div className="relative z-10 shrink-0">
-                <Sidebar activeTab={activeTab} onTabChange={onTabChange} />
+                <Sidebar
+                    activeTab={activeTab}
+                    onTabChange={onTabChange}
+                    openFolders={openFolders}
+                    onFoldersChange={onFoldersChange}
+                />
             </div>
 
             {/* Main Content Area */}
