@@ -475,7 +475,8 @@ export default function GenericTableDashboard({ config }: Props) {
                 get(r, 'email').toLowerCase().includes(q) ||
                 get(r, 'affiliation').toLowerCase().includes(q) ||
                 get(r, 'address').toLowerCase().includes(q) ||
-                get(r, 'languages').toLowerCase().includes(q);
+                get(r, 'languages').toLowerCase().includes(q) ||
+                get(r, 'country').toLowerCase().includes(q);
             if (!match) return false;
         }
         if (filterGender) {

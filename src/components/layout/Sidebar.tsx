@@ -43,6 +43,7 @@ export default function Sidebar({ activeTab, onTabChange, openFolders: openFolde
     const openFolders = openFoldersProp ?? openFoldersLocal;
     const setOpenFolders = onFoldersChange ?? setOpenFoldersLocal;
     const [phAffiliations, setPhAffiliations] = React.useState<string[]>([]);
+    const [phLoading, setPhLoading] = React.useState(true);
 
     React.useEffect(() => {
         (async () => {
@@ -70,6 +71,7 @@ export default function Sidebar({ activeTab, onTabChange, openFolders: openFolde
             const pinned = names.filter(n => n === 'Little Boss');
             const rest = names.filter(n => n !== 'Little Boss').sort((a, b) => a.localeCompare(b));
             setPhAffiliations([...pinned, ...rest]);
+            setPhLoading(false);
         })();
     }, []);
 
@@ -155,6 +157,13 @@ export default function Sidebar({ activeTab, onTabChange, openFolders: openFolde
 
                             <div className={`overflow-hidden transition-all duration-250 ${isOpen ? 'max-h-250 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
                                 <div className="pl-3 mt-0.5 space-y-0.5 border-l-2 border-slate-100 ml-5 mb-1">
+                                    {folder.id === 'crowdsource-philippines' && phLoading && (
+                                        <div className="space-y-1 px-3 py-1">
+                                            {[...Array(5)].map((_, i) => (
+                                                <div key={i} className="h-3 rounded bg-slate-200 animate-pulse" style={{ width: `${60 + (i % 3) * 15}%` }} />
+                                            ))}
+                                        </div>
+                                    )}
                                     {allItems.map(item => {
                                         const isActive = !isAdminRoute && activeTab === item.id;
                                         return (

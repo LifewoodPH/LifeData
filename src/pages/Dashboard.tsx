@@ -38,8 +38,8 @@ export default function Dashboard() {
 
     const renderContent = () => {
         if (activeTab === 'home') return <HomeContent onTabChange={handleTabChange} onOpenFolder={openFolder} />;
-        if (activeTab === 'byu-overview') return <OverviewContent folder="BYU" />;
-        if (activeTab === 'crowdsource-ph-overview') return <OverviewContent folder="crowdsource-philippines" />;
+        if (activeTab === 'byu-overview') return <OverviewContent folder="BYU" onTabChange={tab => { openFolder('byu'); handleTabChange(tab); }} />;
+        if (activeTab === 'crowdsource-ph-overview') return <OverviewContent folder="crowdsource-philippines" onTabChange={tab => { openFolder('crowdsource-philippines'); handleTabChange(tab); }} />;
         if (activeNat && crowdsourcePhBase) {
             return <GenericTableDashboard config={{ ...crowdsourcePhBase, preFilter: { column: 'Affiliation', value: activeNat }, tabId: activeTab }} />;
         }

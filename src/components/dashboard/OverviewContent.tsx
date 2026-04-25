@@ -21,9 +21,10 @@ const BAR_COLORS = [
 
 interface OverviewContentProps {
     folder?: string;
+    onTabChange?: (tab: string) => void;
 }
 
-export default function OverviewContent({ folder }: OverviewContentProps) {
+export default function OverviewContent({ folder, onTabChange }: OverviewContentProps) {
     const [rows, setRows] = useState<CountryRow[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -148,7 +149,11 @@ export default function OverviewContent({ folder }: OverviewContentProps) {
                         const shareOfTotal = total > 0 ? ((item.count / total) * 100).toFixed(1) : '0';
 
                         return (
-                            <div key={item.tabId} className="flex items-center gap-3 group">
+                            <div
+                                key={item.tabId}
+                                onClick={() => onTabChange?.(item.tabId)}
+                                className={`flex items-center gap-3 group ${onTabChange ? 'cursor-pointer rounded-lg hover:bg-slate-50 -mx-2 px-2 py-0.5 transition-colors' : ''}`}
+                            >
                                 <div className="flex items-center gap-2 w-48 shrink-0">
                                     <span className="text-xs text-gray-300 w-4 text-right font-medium">{index + 1}</span>
                                     {item.flagCode
