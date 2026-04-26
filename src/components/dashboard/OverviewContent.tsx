@@ -54,7 +54,7 @@ export default function OverviewContent({ folder, onTabChange }: OverviewContent
                     let v = r['Affiliation']?.trim();
                     if (v === 'Student Number' || v === 'Student ID') v = 'Student';
                     if (v === 'Member') v = 'Church Member';
-                    if (v && allowedNames.has(v)) counts[v] = (counts[v] || 0) + 1;
+                    if (v && allowedNames.has(v) && v !== 'Little Boss') counts[v] = (counts[v] || 0) + 1;
                 });
                 const result: CountryRow[] = Object.entries(counts)
                     .sort((a, b) => b[1] - a[1])
