@@ -8,7 +8,6 @@ export interface TableDashboardColumns {
     joinedDate?: string;
     age?: string;
     country?: string;
-    address?: string;
     languages?: string;
 }
 
@@ -293,25 +292,4 @@ export const TABLE_DASHBOARDS: TableDashboardConfig[] = [
         },
     },
 
-    // Example — uncomment and fill in when ready:
-    // {
-    //     tabId: 'byu-nigeria',
-    //     tableId: 'BYU Nigeria',
-    //     label: 'Nigeria',
-    //     sidebarFolder: 'byu',
-    //     flagCode: 'ng',
-    //     title: 'BYU Nigeria',
-    //     subtitle: 'Affiliation, gender, contact coverage & participant directory',
-    //     columns: {
-    //         firstName: 'FIRST NAME',
-    //         lastName: 'LAST NAME',
-    //         gender: 'GENDER',
-    //         affiliation: 'AFFILIATION',
-    //         email: 'EMAIL ADDRESS',
-    //         phone: 'CONTACT NUMBER',
-    //         joinedDate: 'JOINED DATE',
-    //         age: 'AGE',
-    //         country: 'COUNTRY',
-    //     },
-    // },
 ];

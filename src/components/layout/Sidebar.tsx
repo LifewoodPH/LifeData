@@ -1,6 +1,5 @@
 import React from 'react';
 import { supabase } from '../../lib/supabase';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ChevronDown, FolderOpen, Home, LogOut, Star } from 'lucide-react';
 import { TABLE_DASHBOARDS } from '../../config/tableDashboards';
 import { PH_AFFILIATION_NAMES, INTL_AFFILIATION_NAMES } from '../../config/crowdsourceAffiliations';
@@ -42,8 +41,6 @@ const FOLDERS = [
 let affiliationsCache: string[] | null = null;
 
 export default function Sidebar({ activeTab, onTabChange, openFolders: openFoldersProp, onFoldersChange }: SidebarProps) {
-    const location = useLocation();
-    const navigate = useNavigate();
     const [openFoldersLocal, setOpenFoldersLocal] = React.useState<Record<string, boolean>>({});
     const openFolders = openFoldersProp ?? openFoldersLocal;
     const setOpenFolders = onFoldersChange ?? setOpenFoldersLocal;
@@ -87,15 +84,9 @@ export default function Sidebar({ activeTab, onTabChange, openFolders: openFolde
         })();
     }, []);
 
-    const isAdminRoute = location.pathname === '/admin';
-
     const toggleFolder = (id: string) => setOpenFolders(prev => ({ ...prev, [id]: !prev[id] }));
 
-    const handleNavClick = (id: string, path?: string) => {
-        if (path) { navigate(path); return; }
-        if (isAdminRoute) navigate('/');
-        onTabChange(id);
-    };
+    const handleNavClick = (id: string) => onTabChange(id);
 
     return (
         <aside className="w-56 h-screen sidebar-glass flex flex-col relative entrance-anim">
@@ -154,7 +145,7 @@ export default function Sidebar({ activeTab, onTabChange, openFolders: openFolde
                     if (allItems.length === 0) return null;
 
                     const isOpen = openFolders[folder.id];
-                    const hasActiveChild = !isAdminRoute && allItems.some(item => item.id === activeTab);
+                    const hasActiveChild = allItems.some(item => item.id === activeTab);
 
                     return (
                         <div key={folder.id} className="entrance-anim" style={{ animationDelay: `${(idx + 1) * 0.07}s` }}>
@@ -181,7 +172,7 @@ export default function Sidebar({ activeTab, onTabChange, openFolders: openFolde
                                         </div>
                                     )}
                                     {allItems.map(item => {
-                                        const isActive = !isAdminRoute && activeTab === item.id;
+                                        const isActive = activeTab === item.id;
                                         return (
                                             <button
                                                 key={item.id}

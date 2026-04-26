@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
 import {
     Users, AlertTriangle, Globe, TrendingUp, Building,
     Search, Filter, X, ChevronDown, ChevronsUpDown, ChevronUp,
-    ArrowUp, Mail, Phone, MapPin, Languages, User, Calendar, RefreshCw,
+    ArrowUp, Mail, Phone, Languages, User, Calendar, RefreshCw,
 } from 'lucide-react';
-import React, { useMemo } from 'react';
 import {
     PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
     CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -124,7 +123,6 @@ function DetailDrawer({
         ...(columns.email ? [{ icon: <Mail className="w-4 h-4" />, label: 'Email', value: get('email') || '—' }] : []),
         ...(columns.phone ? [{ icon: <Phone className="w-4 h-4" />, label: 'Phone', value: get('phone') || '—' }] : []),
         ...(columns.country ? [{ icon: <Globe className="w-4 h-4" />, label: 'Nationality', value: get('country') || '—' }] : []),
-        ...(columns.address ? [{ icon: <MapPin className="w-4 h-4" />, label: 'Address', value: get('address') || '—' }] : []),
         ...(columns.languages ? [{ icon: <Languages className="w-4 h-4" />, label: 'Languages', value: get('languages') || '—' }] : []),
         ...(columns.age ? [{ icon: <TrendingUp className="w-4 h-4" />, label: 'Age', value: get('age') || '—' }] : []),
         ...(columns.joinedDate ? [{ icon: <Calendar className="w-4 h-4" />, label: 'Joined', value: get('joinedDate') || '—' }] : []),
@@ -195,7 +193,7 @@ function DetailDrawer({
 }
 
 type SortDir = 'asc' | 'desc';
-type ColKey = 'firstName' | 'lastName' | 'gender' | 'affiliation' | 'email' | 'phone' | 'country' | 'address' | 'languages' | 'age';
+type ColKey = 'firstName' | 'lastName' | 'gender' | 'affiliation' | 'email' | 'phone' | 'country' | 'languages' | 'age';
 
 interface Props { config: TableDashboardConfig; }
 
@@ -525,7 +523,6 @@ export default function GenericTableDashboard({ config }: Props) {
                 get(r, 'lastName').toLowerCase().includes(q) ||
                 get(r, 'email').toLowerCase().includes(q) ||
                 get(r, 'affiliation').toLowerCase().includes(q) ||
-                get(r, 'address').toLowerCase().includes(q) ||
                 get(r, 'languages').toLowerCase().includes(q) ||
                 get(r, 'country').toLowerCase().includes(q);
             if (!match) return false;
@@ -947,7 +944,6 @@ export default function GenericTableDashboard({ config }: Props) {
                                     {columns.email && <th className={thClass('email')} onClick={() => handleSort('email')}>Email <SortIcon col="email" /></th>}
                                     {columns.phone && <th className={thClass('phone')} onClick={() => handleSort('phone')}>Contact <SortIcon col="phone" /></th>}
                                     {columns.country && <th className={thClass('country')} onClick={() => handleSort('country')}>Nationality <SortIcon col="country" /></th>}
-                                    {columns.address && <th className={thClass('address')} onClick={() => handleSort('address')}>Address <SortIcon col="address" /></th>}
                                     {columns.languages && <th className={thClass('languages')} onClick={() => handleSort('languages')}>Languages <SortIcon col="languages" /></th>}
                                 </tr>
                             </thead>
@@ -982,7 +978,6 @@ export default function GenericTableDashboard({ config }: Props) {
                                             {columns.email && <td className="px-4 py-2.5 text-gray-500 text-xs">{get(r, 'email') || '—'}</td>}
                                             {columns.phone && <td className="px-4 py-2.5 text-gray-500 text-xs">{get(r, 'phone') || '—'}</td>}
                                             {columns.country && <td className="px-4 py-2.5 text-gray-500 text-xs">{get(r, 'country') || '—'}</td>}
-                                            {columns.address && <td className="px-4 py-2.5 text-gray-500 text-xs truncate max-w-37.5">{get(r, 'address') || '—'}</td>}
                                             {columns.languages && <td className="px-4 py-2.5 text-gray-500 text-xs truncate max-w-37.5">{get(r, 'languages') || '—'}</td>}
                                         </tr>
                                     );
