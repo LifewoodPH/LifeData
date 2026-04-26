@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { TABLE_DASHBOARDS } from '../../config/tableDashboards';
 import { PH_AFFILIATION_NAMES, INTL_AFFILIATION_NAMES } from '../../config/crowdsourceAffiliations';
 import { getAffilFlagCode, AFFIL_ICON_OVERRIDES } from '../../lib/affilFlags';
-import { Star } from 'lucide-react';
+import { Star, AlertTriangle, Database, RefreshCw } from 'lucide-react';
 // @ts-ignore
 import 'flag-icons/css/flag-icons.min.css';
 
@@ -28,44 +28,40 @@ interface OverviewContentProps {
 export default function OverviewContent({ folder, onTabChange }: OverviewContentProps) {
     const [rows, setRows] = useState<CountryRow[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [retryKey, setRetryKey] = useState(0);
 
     useEffect(() => {
         setLoading(true);
         setRows([]);
+        setError(null);
 
         if (folder === 'crowdsource-philippines' || folder === 'crowdsource-international') {
             const allowedNames = folder === 'crowdsource-philippines' ? PH_AFFILIATION_NAMES : INTL_AFFILIATION_NAMES;
+            const toCount = [...allowedNames].filter(a => a !== 'Little Boss');
             (async () => {
-                const PAGE = 1000;
-                let all: Record<string, string>[] = [];
-                let from = 0;
-                while (true) {
-                    const { data, error } = await supabase
-                        .from('Crowdsource PH')
-                        .select('"Affiliation"')
-                        .range(from, from + PAGE - 1);
-                    if (error || !data || data.length === 0) break;
-                    all = [...all, ...(data as Record<string, string>[])];
-                    if (data.length < PAGE) break;
-                    from += PAGE;
+                try {
+                    const results = await Promise.all(
+                        toCount.map(async affil => {
+                            const { count, error: fetchErr } = await supabase
+                                .from('Crowdsource PH')
+                                .select('*', { count: 'exact', head: true })
+                                .eq('Affiliation', affil);
+                            if (fetchErr) throw fetchErr;
+                            return {
+                                tabId: `crowdsource-ph-aff-${encodeURIComponent(affil)}`,
+                                label: affil,
+                                flagCode: getAffilFlagCode(affil) ?? '',
+                                count: count ?? 0,
+                            };
+                        })
+                    );
+                    setRows(results.filter(r => r.count > 0).sort((a, b) => b.count - a.count));
+                } catch {
+                    setError('Failed to load data. Check your connection and try again.');
+                } finally {
+                    setLoading(false);
                 }
-                const counts: Record<string, number> = {};
-                all.forEach(r => {
-                    let v = r['Affiliation']?.trim();
-                    if (v === 'Student Number' || v === 'Student ID') v = 'Student';
-                    if (v === 'Member') v = 'Church Member';
-                    if (v && allowedNames.has(v) && v !== 'Little Boss') counts[v] = (counts[v] || 0) + 1;
-                });
-                const result: CountryRow[] = Object.entries(counts)
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([name, count]) => ({
-                        tabId: `crowdsource-ph-aff-${encodeURIComponent(name)}`,
-                        label: name,
-                        flagCode: getAffilFlagCode(name) ?? '',
-                        count,
-                    }));
-                setRows(result);
-                setLoading(false);
             })();
             return;
         }
@@ -76,9 +72,10 @@ export default function OverviewContent({ folder, onTabChange }: OverviewContent
 
         Promise.all(
             configs.map(async cfg => {
-                const { count } = await supabase
+                const { count, error: fetchErr } = await supabase
                     .from(cfg.tableId)
                     .select('*', { count: 'exact', head: true });
+                if (fetchErr) throw fetchErr;
                 return {
                     tabId: cfg.tabId,
                     label: cfg.label,
@@ -89,8 +86,11 @@ export default function OverviewContent({ folder, onTabChange }: OverviewContent
         ).then(results => {
             setRows(results.sort((a, b) => b.count - a.count));
             setLoading(false);
+        }).catch(() => {
+            setError('Failed to load data. Check your connection and try again.');
+            setLoading(false);
         });
-    }, [folder]);
+    }, [folder, retryKey]);
 
     if (loading) {
         return (
@@ -98,6 +98,36 @@ export default function OverviewContent({ folder, onTabChange }: OverviewContent
                 <div className="text-center">
                     <div className="w-12 h-12 border-3 border-emerald-100 border-t-emerald-600 rounded-full animate-spin mx-auto mb-3" />
                     <p className="text-sm text-gray-400 font-medium">Loading overview…</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                    <AlertTriangle className="w-10 h-10 text-amber-300 mx-auto mb-3" />
+                    <p className="text-sm font-semibold text-gray-700 mb-1">Failed to load data</p>
+                    <p className="text-xs text-gray-400 mb-4">{error}</p>
+                    <button
+                        onClick={() => setRetryKey(k => k + 1)}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                    >
+                        <RefreshCw className="w-3.5 h-3.5" /> Try again
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (rows.length === 0) {
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                    <Database className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                    <p className="text-sm font-semibold text-gray-700 mb-1">No data yet</p>
+                    <p className="text-xs text-gray-400">This overview will populate once participants are added.</p>
                 </div>
             </div>
         );

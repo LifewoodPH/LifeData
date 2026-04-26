@@ -39,6 +39,8 @@ const FOLDERS = [
     },
 ];
 
+let affiliationsCache: string[] | null = null;
+
 export default function Sidebar({ activeTab, onTabChange, openFolders: openFoldersProp, onFoldersChange }: SidebarProps) {
     const location = useLocation();
     const navigate = useNavigate();
@@ -49,6 +51,11 @@ export default function Sidebar({ activeTab, onTabChange, openFolders: openFolde
     const [phLoading, setPhLoading] = React.useState(true);
 
     React.useEffect(() => {
+        if (affiliationsCache !== null) {
+            setPhAffiliations(affiliationsCache);
+            setPhLoading(false);
+            return;
+        }
         (async () => {
             const PAGE = 1000;
             let all: Record<string, string>[] = [];
@@ -73,7 +80,9 @@ export default function Sidebar({ activeTab, onTabChange, openFolders: openFolde
             const names = Object.keys(counts);
             const pinned = names.filter(n => n === 'Little Boss');
             const rest = names.filter(n => n !== 'Little Boss').sort((a, b) => a.localeCompare(b));
-            setPhAffiliations([...pinned, ...rest]);
+            const sorted = [...pinned, ...rest];
+            affiliationsCache = sorted;
+            setPhAffiliations(sorted);
             setPhLoading(false);
         })();
     }, []);

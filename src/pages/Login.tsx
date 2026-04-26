@@ -6,6 +6,25 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [mode, setMode] = useState<'login' | 'forgot'>('login');
+    const [resetSent, setResetSent] = useState(false);
+
+    const handleForgotPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin,
+            });
+            if (error) throw error;
+            setResetSent(true);
+        } catch (err: any) {
+            setError(err.message || 'Failed to send reset email. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -62,68 +81,133 @@ export default function Login() {
                     </div>
 
                     {/* Form */}
-                    <form onSubmit={handleLogin} className="space-y-6">
-                        {error && (
-                            <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg">
-                                {error}
-                            </div>
-                        )}
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="email">
-                                Email
-                            </label>
-                            <input
-                                id="email"
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition-all duration-200 text-gray-800 placeholder-gray-400"
-                                placeholder="hi@lifewood.com"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <label className="block text-sm font-medium text-gray-700" htmlFor="password">
-                                    Password
-                                </label>
-                                <a href="#" className="text-xs font-semibold text-emerald-700 hover:text-emerald-800">
-                                    Forgot password?
-                                </a>
-                            </div>
-                            <input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition-all duration-200 text-gray-800 placeholder-gray-400 tracking-widest"
-                                placeholder="••••••••"
-                                required
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-linear-to-r from-emerald-800 to-emerald-700 hover:from-emerald-900 hover:to-emerald-800 text-white font-medium py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed mt-2"
-                        >
-                            {loading ? (
-                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
+                    {mode === 'forgot' ? (
+                        <div className="space-y-6">
+                            {resetSent ? (
+                                <div className="space-y-4">
+                                    <div className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm rounded-lg">
+                                        Reset link sent! Check your inbox at <span className="font-semibold">{email}</span>.
+                                    </div>
+                                    <button
+                                        onClick={() => { setMode('login'); setResetSent(false); setError(null); }}
+                                        className="w-full text-sm font-semibold text-emerald-700 hover:text-emerald-800 py-2"
+                                    >
+                                        ← Back to Sign In
+                                    </button>
+                                </div>
                             ) : (
-                                "Sign In"
+                                <form onSubmit={handleForgotPassword} className="space-y-5">
+                                    {error && (
+                                        <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg">{error}</div>
+                                    )}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="reset-email">
+                                            Email
+                                        </label>
+                                        <input
+                                            id="reset-email"
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition-all duration-200 text-gray-800 placeholder-gray-400"
+                                            placeholder="hi@lifewood.com"
+                                            required
+                                        />
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full bg-linear-to-r from-emerald-800 to-emerald-700 hover:from-emerald-900 hover:to-emerald-800 text-white font-medium py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed"
+                                    >
+                                        {loading ? (
+                                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                        ) : 'Send Reset Link'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setMode('login'); setError(null); }}
+                                        className="w-full text-sm font-semibold text-emerald-700 hover:text-emerald-800 py-1"
+                                    >
+                                        ← Back to Sign In
+                                    </button>
+                                </form>
                             )}
-                        </button>
-
-                        <div className="flex flex-col items-center gap-1.5 pt-4">
-                            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest">Powered by</p>
-                            <img src="/lifewood.png" alt="Lifewood" className="h-5 object-contain" />
+                            <div className="flex flex-col items-center gap-1.5 pt-2">
+                                <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest">Powered by</p>
+                                <img src="/lifewood.png" alt="Lifewood" className="h-5 object-contain" />
+                            </div>
                         </div>
-                    </form>
+                    ) : (
+                        <form onSubmit={handleLogin} className="space-y-6">
+                            {error && (
+                                <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg">
+                                    {error}
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="email">
+                                    Email
+                                </label>
+                                <input
+                                    id="email"
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition-all duration-200 text-gray-800 placeholder-gray-400"
+                                    placeholder="hi@lifewood.com"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-sm font-medium text-gray-700" htmlFor="password">
+                                        Password
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setMode('forgot'); setError(null); setResetSent(false); }}
+                                        className="text-xs font-semibold text-emerald-700 hover:text-emerald-800"
+                                    >
+                                        Forgot password?
+                                    </button>
+                                </div>
+                                <input
+                                    id="password"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition-all duration-200 text-gray-800 placeholder-gray-400 tracking-widest"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-linear-to-r from-emerald-800 to-emerald-700 hover:from-emerald-900 hover:to-emerald-800 text-white font-medium py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+                            >
+                                {loading ? (
+                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                ) : (
+                                    "Sign In"
+                                )}
+                            </button>
+
+                            <div className="flex flex-col items-center gap-1.5 pt-4">
+                                <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest">Powered by</p>
+                                <img src="/lifewood.png" alt="Lifewood" className="h-5 object-contain" />
+                            </div>
+                        </form>
+                    )}
                 </div>
 
                 <div className="flex-1" />

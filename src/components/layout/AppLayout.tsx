@@ -2,11 +2,17 @@ import React from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
+interface BreadcrumbItem {
+    label: string;
+    onClick?: () => void;
+}
+
 interface AppLayoutProps {
     children: React.ReactNode;
     title: string;
     subtitle?: string;
     lastUpdated?: Date | null;
+    breadcrumb?: BreadcrumbItem[];
     activeTab?: string;
     onTabChange?: (tab: string) => void;
     openFolders?: Record<string, boolean>;
@@ -18,6 +24,7 @@ export default function AppLayout({
     title,
     subtitle,
     lastUpdated,
+    breadcrumb,
     activeTab = '',
     onTabChange = () => { },
     openFolders,
@@ -41,6 +48,7 @@ export default function AppLayout({
                     title={title}
                     subtitle={subtitle}
                     lastUpdated={lastUpdated}
+                    breadcrumb={breadcrumb}
                 />
                 <div className="flex-1 overflow-hidden flex flex-col px-6 pb-6">
                     {children}

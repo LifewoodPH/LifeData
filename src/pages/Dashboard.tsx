@@ -4,6 +4,7 @@ import OverviewContent from '../components/dashboard/OverviewContent';
 import GenericTableDashboard from '../components/dashboard/GenericTableDashboard';
 import HomeContent from '../components/dashboard/HomeContent';
 import { TABLE_DASHBOARDS } from '../config/tableDashboards';
+import { PH_AFFILIATION_NAMES, INTL_AFFILIATION_NAMES } from '../config/crowdsourceAffiliations';
 
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState('home');
@@ -37,6 +38,52 @@ export default function Dashboard() {
         ? { title: `Crowdsource PH – ${activeNat}`, subtitle: `${activeNat} participants directory` }
         : (tabTitles[activeTab] ?? { title: 'Dashboard', subtitle: '' });
 
+    const breadcrumb = (() => {
+        if (activeTab === 'home') return undefined;
+
+        if (activeTab === 'byu-overview') return [
+            { label: 'BYU', onClick: () => { openFolder('byu'); handleTabChange('byu-overview'); } },
+            { label: 'Overview' },
+        ];
+
+        if (activeTab === 'crowdsource-ph-overview') return [
+            { label: 'Crowdsource PH', onClick: () => { openFolder('crowdsource-philippines'); handleTabChange('crowdsource-ph-overview'); } },
+            { label: 'Overview' },
+        ];
+
+        if (activeTab === 'crowdsource-intl-overview') return [
+            { label: "Crowdsource Int'l", onClick: () => { openFolder('crowdsource-international'); handleTabChange('crowdsource-intl-overview'); } },
+            { label: 'Overview' },
+        ];
+
+        const byuMatch = TABLE_DASHBOARDS.find(cfg => cfg.tabId === activeTab && cfg.sidebarFolder === 'byu');
+        if (byuMatch) return [
+            { label: 'BYU', onClick: () => { openFolder('byu'); handleTabChange('byu-overview'); } },
+            { label: byuMatch.label },
+        ];
+
+        if (activeNat) {
+            const isIntlOnly = INTL_AFFILIATION_NAMES.has(activeNat) && !PH_AFFILIATION_NAMES.has(activeNat);
+            const isShared = INTL_AFFILIATION_NAMES.has(activeNat) && PH_AFFILIATION_NAMES.has(activeNat);
+            const useIntl = isIntlOnly || (isShared && openFolders['crowdsource-international'] && !openFolders['crowdsource-philippines']);
+            return useIntl
+                ? [{ label: "Crowdsource Int'l", onClick: () => { openFolder('crowdsource-international'); handleTabChange('crowdsource-intl-overview'); } }, { label: activeNat }]
+                : [{ label: 'Crowdsource PH', onClick: () => { openFolder('crowdsource-philippines'); handleTabChange('crowdsource-ph-overview'); } }, { label: activeNat }];
+        }
+
+        const cfgMatch = TABLE_DASHBOARDS.find(cfg => cfg.tabId === activeTab);
+        if (cfgMatch?.sidebarFolder === 'crowdsource-philippines') return [
+            { label: 'Crowdsource PH', onClick: () => { openFolder('crowdsource-philippines'); handleTabChange('crowdsource-ph-overview'); } },
+            { label: cfgMatch.label },
+        ];
+        if (cfgMatch?.sidebarFolder === 'crowdsource-international') return [
+            { label: "Crowdsource Int'l", onClick: () => { openFolder('crowdsource-international'); handleTabChange('crowdsource-intl-overview'); } },
+            { label: cfgMatch.label },
+        ];
+
+        return undefined;
+    })();
+
     const renderContent = () => {
         if (activeTab === 'home') return <HomeContent onTabChange={handleTabChange} onOpenFolder={openFolder} />;
         if (activeTab === 'byu-overview') return <OverviewContent folder="BYU" onTabChange={tab => { openFolder('byu'); handleTabChange(tab); }} />;
@@ -55,6 +102,7 @@ export default function Dashboard() {
             title={metadata.title}
             subtitle={metadata.subtitle}
             lastUpdated={null}
+            breadcrumb={breadcrumb}
             activeTab={activeTab}
             onTabChange={handleTabChange}
             openFolders={openFolders}

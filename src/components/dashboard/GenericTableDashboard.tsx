@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import {
     Users, AlertTriangle, Globe, TrendingUp, Building,
     Search, Filter, X, ChevronDown, ChevronsUpDown, ChevronUp,
-    ArrowUp, Mail, Phone, MapPin, Languages, User, Calendar,
+    ArrowUp, Mail, Phone, MapPin, Languages, User, Calendar, RefreshCw,
 } from 'lucide-react';
 import React, { useMemo } from 'react';
 import {
@@ -204,6 +204,9 @@ export default function GenericTableDashboard({ config }: Props) {
     const showAffiliation = !!columns.affiliation && !config.preFilter;
     const [rows, setRows] = useState<Record<string, string>[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [retryKey, setRetryKey] = useState(0);
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(15);
@@ -293,30 +296,60 @@ export default function GenericTableDashboard({ config }: Props) {
         setSortCol(null);
         setSortDir('asc');
         setSelectedRow(null);
+        setError(null);
+        setIsLoadingMore(false);
         resetFilters();
 
         const cols = Object.values(columns).filter(Boolean) as string[];
         const selectStr = cols.map(c => `"${c}"`).join(',');
 
+        let cancelled = false;
+
         (async () => {
             const PAGE = 1000;
             let all: Record<string, string>[] = [];
             let from = 0;
-            while (true) {
+            let firstBatch = true;
+
+            while (!cancelled) {
                 let q = supabase.from(tableId).select(selectStr).range(from, from + PAGE - 1);
-                if (config.preFilter) {
-                    q = q.eq(config.preFilter.column, config.preFilter.value);
+                if (config.preFilter) q = q.eq(config.preFilter.column, config.preFilter.value);
+                const { data, error: fetchErr } = await q;
+
+                if (cancelled) break;
+
+                if (fetchErr) {
+                    setError('Failed to load data. Check your connection and try again.');
+                    setLoading(false);
+                    setIsLoadingMore(false);
+                    return;
                 }
-                const { data, error } = await q;
-                if (error || !data || data.length === 0) break;
+
+                if (!data || data.length === 0) {
+                    if (firstBatch) setLoading(false);
+                    setIsLoadingMore(false);
+                    break;
+                }
+
                 all = [...all, ...(data as unknown as Record<string, string>[])];
-                if (data.length < PAGE) break;
+
+                if (firstBatch) {
+                    setRows([...all]);
+                    setLoading(false);
+                    firstBatch = false;
+                    if (data.length < PAGE) { setIsLoadingMore(false); break; }
+                    setIsLoadingMore(true);
+                } else {
+                    setRows([...all]);
+                    if (data.length < PAGE) { setIsLoadingMore(false); break; }
+                }
+
                 from += PAGE;
             }
-            setRows(all);
-            setLoading(false);
         })();
-    }, [tableId, config.preFilter?.value]);
+
+        return () => { cancelled = true; };
+    }, [tableId, config.preFilter?.value, retryKey]);
 
     useEffect(() => {
         const handler = (e: MouseEvent) => {
@@ -388,6 +421,24 @@ export default function GenericTableDashboard({ config }: Props) {
     ];
 
     if (loading) return <LoadingSkeleton />;
+
+    if (error) {
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                    <AlertTriangle className="w-10 h-10 text-amber-300 mx-auto mb-3" />
+                    <p className="text-sm font-semibold text-gray-700 mb-1">Failed to load data</p>
+                    <p className="text-xs text-gray-400 mb-4">{error}</p>
+                    <button
+                        onClick={() => setRetryKey(k => k + 1)}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                    >
+                        <RefreshCw className="w-3.5 h-3.5" /> Try again
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     // Chart data
     const affiliationMap: Record<string, number> = {};
@@ -939,6 +990,14 @@ export default function GenericTableDashboard({ config }: Props) {
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Loading more indicator */}
+                    {isLoadingMore && (
+                        <div className="px-5 py-2 bg-emerald-50 border-t border-emerald-100 flex items-center gap-2">
+                            <div className="w-3 h-3 border-2 border-emerald-200 border-t-emerald-500 rounded-full animate-spin shrink-0" />
+                            <span className="text-xs text-emerald-700">Loading more participants…</span>
+                        </div>
+                    )}
 
                     {/* Pagination */}
                     <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
