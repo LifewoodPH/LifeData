@@ -56,6 +56,12 @@ export default function HomeContent({ onTabChange, onOpenFolder }: { onTabChange
                         >
                             Crowdsource PH
                         </button>
+                        <button
+                            onClick={() => { onTabChange('crowdsource-intl-overview'); onOpenFolder?.('crowdsource-international'); }}
+                            className="border border-white/30 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-white/10 transition-colors"
+                        >
+                            Crowdsource Int'l
+                        </button>
                     </div>
                 </div>
             </div>

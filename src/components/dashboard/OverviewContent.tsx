@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { TABLE_DASHBOARDS } from '../../config/tableDashboards';
+import { PH_AFFILIATION_NAMES, INTL_AFFILIATION_NAMES } from '../../config/crowdsourceAffiliations';
 import { getAffilFlagCode, AFFIL_ICON_OVERRIDES } from '../../lib/affilFlags';
 import { Star } from 'lucide-react';
 // @ts-ignore
@@ -32,7 +33,8 @@ export default function OverviewContent({ folder, onTabChange }: OverviewContent
         setLoading(true);
         setRows([]);
 
-        if (folder === 'crowdsource-philippines') {
+        if (folder === 'crowdsource-philippines' || folder === 'crowdsource-international') {
+            const allowedNames = folder === 'crowdsource-philippines' ? PH_AFFILIATION_NAMES : INTL_AFFILIATION_NAMES;
             (async () => {
                 const PAGE = 1000;
                 let all: Record<string, string>[] = [];
@@ -52,7 +54,7 @@ export default function OverviewContent({ folder, onTabChange }: OverviewContent
                     let v = r['Affiliation']?.trim();
                     if (v === 'Student Number' || v === 'Student ID') v = 'Student';
                     if (v === 'Member') v = 'Church Member';
-                    if (v && v.toLowerCase() !== 'n/a') counts[v] = (counts[v] || 0) + 1;
+                    if (v && allowedNames.has(v)) counts[v] = (counts[v] || 0) + 1;
                 });
                 const result: CountryRow[] = Object.entries(counts)
                     .sort((a, b) => b[1] - a[1])
@@ -106,14 +108,14 @@ export default function OverviewContent({ folder, onTabChange }: OverviewContent
     const avg = rows.length ? Math.round(total / rows.length) : 0;
     const maxCount = largest?.count ?? 1;
 
-    const isCrowdsourcePH = folder === 'crowdsource-philippines';
-    const groupLabel = isCrowdsourcePH ? 'Affiliations' : 'Countries';
+    const isCrowdsource = folder === 'crowdsource-philippines' || folder === 'crowdsource-international';
+    const groupLabel = isCrowdsource ? 'Affiliations' : 'Countries';
 
     const statCards = [
-        { label: 'Total Participants', value: total.toLocaleString(), sub: isCrowdsourcePH ? 'across all affiliations' : 'across all countries', accent: 'card-accent-emerald', iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
+        { label: 'Total Participants', value: total.toLocaleString(), sub: isCrowdsource ? 'across all affiliations' : 'across all countries', accent: 'card-accent-emerald', iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
         { label: groupLabel, value: String(rows.length), sub: 'represented in directory', accent: 'card-accent-sky', iconBg: 'bg-sky-50', iconColor: 'text-sky-600' },
-        { label: `Largest ${isCrowdsourcePH ? 'Affiliation' : 'Country'}`, value: largest ? largest.count.toLocaleString() : '—', sub: largest?.label ?? '', accent: 'card-accent-violet', iconBg: 'bg-violet-50', iconColor: 'text-violet-600' },
-        { label: `Avg per ${isCrowdsourcePH ? 'Affiliation' : 'Country'}`, value: avg.toLocaleString(), sub: 'participants average', accent: 'card-accent-amber', iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
+        { label: `Largest ${isCrowdsource ? 'Affiliation' : 'Country'}`, value: largest ? largest.count.toLocaleString() : '—', sub: largest?.label ?? '', accent: 'card-accent-violet', iconBg: 'bg-violet-50', iconColor: 'text-violet-600' },
+        { label: `Avg per ${isCrowdsource ? 'Affiliation' : 'Country'}`, value: avg.toLocaleString(), sub: 'participants average', accent: 'card-accent-amber', iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
     ];
 
     return (
@@ -134,11 +136,11 @@ export default function OverviewContent({ folder, onTabChange }: OverviewContent
             <div className="flat-card p-6">
                 <div className="flex items-center justify-between mb-5">
                     <div>
-                        <h3 className="text-base font-bold text-gray-800">Participants by {isCrowdsourcePH ? 'Affiliation' : 'Country'}</h3>
+                        <h3 className="text-base font-bold text-gray-800">Participants by {isCrowdsource ? 'Affiliation' : 'Country'}</h3>
                         <p className="text-xs text-gray-400 mt-0.5">Sorted by participant count</p>
                     </div>
                     <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-md border border-emerald-100">
-                        {rows.length} {isCrowdsourcePH ? 'affiliations' : 'countries'}
+                        {rows.length} {isCrowdsource ? 'affiliations' : 'countries'}
                     </span>
                 </div>
 

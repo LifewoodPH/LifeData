@@ -28,7 +28,8 @@ export default function Dashboard() {
     const tabTitles: Record<string, { title: string; subtitle?: string }> = {
         'home': { title: 'Home', subtitle: 'Welcome to the LifeData Analytics Hub' },
         'byu-overview': { title: 'BYU Project Overview', subtitle: 'Summary of all BYU country participants' },
-        'crowdsource-ph-overview': { title: 'Crowdsource PH Overview', subtitle: 'Summary of all Philippines crowdsource participants by nationality' },
+        'crowdsource-ph-overview': { title: 'Crowdsource PH Overview', subtitle: 'Summary of all Philippines crowdsource participants by affiliation' },
+        'crowdsource-intl-overview': { title: "Crowdsource Int'l Overview", subtitle: 'Summary of all international crowdsource participants by affiliation' },
         ...Object.fromEntries(TABLE_DASHBOARDS.map(cfg => [cfg.tabId, { title: cfg.title, subtitle: cfg.subtitle }])),
     };
 
@@ -40,6 +41,7 @@ export default function Dashboard() {
         if (activeTab === 'home') return <HomeContent onTabChange={handleTabChange} onOpenFolder={openFolder} />;
         if (activeTab === 'byu-overview') return <OverviewContent folder="BYU" onTabChange={tab => { openFolder('byu'); handleTabChange(tab); }} />;
         if (activeTab === 'crowdsource-ph-overview') return <OverviewContent folder="crowdsource-philippines" onTabChange={tab => { openFolder('crowdsource-philippines'); handleTabChange(tab); }} />;
+        if (activeTab === 'crowdsource-intl-overview') return <OverviewContent folder="crowdsource-international" onTabChange={tab => { openFolder('crowdsource-international'); handleTabChange(tab); }} />;
         if (activeNat && crowdsourcePhBase) {
             return <GenericTableDashboard config={{ ...crowdsourcePhBase, preFilter: { column: 'Affiliation', value: activeNat }, tabId: activeTab }} />;
         }

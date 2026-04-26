@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ChevronDown, FolderOpen, Home, LogOut, Star } from 'lucide-react';
 import { TABLE_DASHBOARDS } from '../../config/tableDashboards';
+import { PH_AFFILIATION_NAMES, INTL_AFFILIATION_NAMES } from '../../config/crowdsourceAffiliations';
 import { getAffilFlagCode, AFFIL_ICON_OVERRIDES } from '../../lib/affilFlags';
 // @ts-ignore
 import 'flag-icons/css/flag-icons.min.css';
@@ -32,7 +33,9 @@ const FOLDERS = [
     {
         id: 'crowdsource-international',
         label: 'Crowdsource International',
-        pinnedItems: [] as { id: string; label: string; flagCode: string | null }[],
+        pinnedItems: [
+            { id: 'crowdsource-intl-overview', label: "Crowdsource Int'l Overview", flagCode: null },
+        ] as { id: string; label: string; flagCode: string | null }[],
     },
 ];
 
@@ -86,7 +89,7 @@ export default function Sidebar({ activeTab, onTabChange, openFolders: openFolde
     };
 
     return (
-        <aside className="w-64 h-screen sidebar-glass flex flex-col relative entrance-anim">
+        <aside className="w-56 h-screen sidebar-glass flex flex-col relative entrance-anim">
             {/* Logo */}
             <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-100">
                 <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-sm overflow-hidden p-1 shrink-0 border border-slate-100">
@@ -117,17 +120,24 @@ export default function Sidebar({ activeTab, onTabChange, openFolders: openFolde
                 {FOLDERS.map((folder, idx) => {
                     const configItems = TABLE_DASHBOARDS.filter(cfg => cfg.sidebarFolder === folder.id);
 
-                    const nationalityItems = folder.id === 'crowdsource-philippines'
-                        ? phAffiliations.map((aff: string) => ({
-                            id: `crowdsource-ph-aff-${encodeURIComponent(aff)}`,
-                            label: aff,
-                            flagCode: getAffilFlagCode(aff),
-                        }))
+                    const toAffilItems = (affs: string[]) => affs.map((aff: string) => ({
+                        id: `crowdsource-ph-aff-${encodeURIComponent(aff)}`,
+                        label: aff,
+                        flagCode: getAffilFlagCode(aff),
+                    }));
+
+                    const nationalityItems =
+                        folder.id === 'crowdsource-philippines'
+                            ? toAffilItems(phAffiliations.filter(a => PH_AFFILIATION_NAMES.has(a)))
+                        : folder.id === 'crowdsource-international'
+                            ? toAffilItems(phAffiliations.filter(a => INTL_AFFILIATION_NAMES.has(a)))
                         : [];
+
+                    const isCrowdsourceFolder = folder.id === 'crowdsource-philippines' || folder.id === 'crowdsource-international';
 
                     const allItems = [
                         ...folder.pinnedItems.map(p => ({ id: p.id, label: p.label, flagCode: p.flagCode })),
-                        ...(folder.id === 'crowdsource-philippines'
+                        ...(isCrowdsourceFolder
                             ? nationalityItems
                             : configItems.map(cfg => ({ id: cfg.tabId, label: cfg.label, flagCode: cfg.flagCode ?? null }))),
                     ];
@@ -135,10 +145,7 @@ export default function Sidebar({ activeTab, onTabChange, openFolders: openFolde
                     if (allItems.length === 0) return null;
 
                     const isOpen = openFolders[folder.id];
-                    const hasActiveChild = !isAdminRoute && (
-                        allItems.some(item => item.id === activeTab) ||
-                        (folder.id === 'crowdsource-philippines' && activeTab.startsWith('crowdsource-ph-aff-'))
-                    );
+                    const hasActiveChild = !isAdminRoute && allItems.some(item => item.id === activeTab);
 
                     return (
                         <div key={folder.id} className="entrance-anim" style={{ animationDelay: `${(idx + 1) * 0.07}s` }}>
@@ -148,16 +155,16 @@ export default function Sidebar({ activeTab, onTabChange, openFolders: openFolde
                                     hasActiveChild ? 'text-emerald-700 bg-emerald-50' : 'text-gray-600 hover:bg-slate-50 hover:text-gray-800'
                                 }`}
                             >
-                                <div className="flex items-center gap-2.5">
+                                <div className="flex items-center gap-2.5 flex-1 min-w-0">
                                     <FolderOpen className={`w-4 h-4 shrink-0 ${hasActiveChild ? 'text-emerald-500' : 'text-gray-400 group-hover:text-gray-500'}`} />
-                                    <span className="text-left">{folder.label}</span>
+                                    <span className="text-left leading-snug">{folder.label}</span>
                                 </div>
                                 <ChevronDown className={`w-3.5 h-3.5 shrink-0 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                             </button>
 
                             <div className={`overflow-hidden transition-all duration-250 ${isOpen ? 'max-h-250 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
                                 <div className="pl-3 mt-0.5 space-y-0.5 border-l-2 border-slate-100 ml-5 mb-1">
-                                    {folder.id === 'crowdsource-philippines' && phLoading && (
+                                    {isCrowdsourceFolder && phLoading && (
                                         <div className="space-y-1 px-3 py-1">
                                             {[...Array(5)].map((_, i) => (
                                                 <div key={i} className="h-3 rounded bg-slate-200 animate-pulse" style={{ width: `${60 + (i % 3) * 15}%` }} />
