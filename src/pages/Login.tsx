@@ -6,25 +6,6 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [mode, setMode] = useState<'login' | 'forgot'>('login');
-    const [resetSent, setResetSent] = useState(false);
-
-    const handleForgotPassword = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-        try {
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin,
-            });
-            if (error) throw error;
-            setResetSent(true);
-        } catch (err: any) {
-            setError(err.message || 'Failed to send reset email. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -32,14 +13,8 @@ export default function Login() {
         setError(null);
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
-
-            if (error) {
-                throw error;
-            }
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) throw error;
         } catch (err: any) {
             setError(err.message || 'Failed to sign in. Please try again.');
         } finally {
@@ -63,13 +38,11 @@ export default function Login() {
                     <source src="https://www.pexels.com/download/video/10922866/" type="video/mp4" />
                 </video>
 
-                {/* Overlay to ensure text readability */}
                 <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] pointer-events-none"></div>
 
                 <div className="flex-1" />
 
                 <div className="w-full max-w-sm relative z-10">
-                    {/* Logo Section */}
                     <div className="mb-8 flex items-center gap-4">
                         <div className="w-14 h-14 bg-white rounded-xl shadow-md border border-gray-100 flex items-center justify-center p-2 shrink-0">
                             <img src="/lifedata.png" alt="LifeData Logo" className="w-full h-full object-contain" />
@@ -80,134 +53,61 @@ export default function Login() {
                         </div>
                     </div>
 
-                    {/* Form */}
-                    {mode === 'forgot' ? (
-                        <div className="space-y-6">
-                            {resetSent ? (
-                                <div className="space-y-4">
-                                    <div className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm rounded-lg">
-                                        Reset link sent! Check your inbox at <span className="font-semibold">{email}</span>.
-                                    </div>
-                                    <button
-                                        onClick={() => { setMode('login'); setResetSent(false); setError(null); }}
-                                        className="w-full text-sm font-semibold text-emerald-700 hover:text-emerald-800 py-2"
-                                    >
-                                        ← Back to Sign In
-                                    </button>
-                                </div>
-                            ) : (
-                                <form onSubmit={handleForgotPassword} className="space-y-5">
-                                    {error && (
-                                        <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg">{error}</div>
-                                    )}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="reset-email">
-                                            Email
-                                        </label>
-                                        <input
-                                            id="reset-email"
-                                            type="email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition-all duration-200 text-gray-800 placeholder-gray-400"
-                                            placeholder="hi@lifewood.com"
-                                            required
-                                        />
-                                    </div>
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="w-full bg-linear-to-r from-emerald-800 to-emerald-700 hover:from-emerald-900 hover:to-emerald-800 text-white font-medium py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed"
-                                    >
-                                        {loading ? (
-                                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                        ) : 'Send Reset Link'}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => { setMode('login'); setError(null); }}
-                                        className="w-full text-sm font-semibold text-emerald-700 hover:text-emerald-800 py-1"
-                                    >
-                                        ← Back to Sign In
-                                    </button>
-                                </form>
-                            )}
-                            <div className="flex flex-col items-center gap-1.5 pt-2">
-                                <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest">Powered by</p>
-                                <img src="/lifewood.png" alt="Lifewood" className="h-5 object-contain" />
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        {error && (
+                            <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg">
+                                {error}
                             </div>
+                        )}
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="email">
+                                Email
+                            </label>
+                            <input
+                                id="email"
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition-all duration-200 text-gray-800 placeholder-gray-400"
+                                placeholder="hi@lifewood.com"
+                                required
+                            />
                         </div>
-                    ) : (
-                        <form onSubmit={handleLogin} className="space-y-6">
-                            {error && (
-                                <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg">
-                                    {error}
-                                </div>
-                            )}
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="email">
-                                    Email
-                                </label>
-                                <input
-                                    id="email"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition-all duration-200 text-gray-800 placeholder-gray-400"
-                                    placeholder="hi@lifewood.com"
-                                    required
-                                />
-                            </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="password">
+                                Password
+                            </label>
+                            <input
+                                id="password"
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition-all duration-200 text-gray-800 placeholder-gray-400 tracking-widest"
+                                placeholder="••••••••"
+                                required
+                            />
+                        </div>
 
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <label className="block text-sm font-medium text-gray-700" htmlFor="password">
-                                        Password
-                                    </label>
-                                    <button
-                                        type="button"
-                                        onClick={() => { setMode('forgot'); setError(null); setResetSent(false); }}
-                                        className="text-xs font-semibold text-emerald-700 hover:text-emerald-800"
-                                    >
-                                        Forgot password?
-                                    </button>
-                                </div>
-                                <input
-                                    id="password"
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition-all duration-200 text-gray-800 placeholder-gray-400 tracking-widest"
-                                    placeholder="••••••••"
-                                    required
-                                />
-                            </div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-linear-to-r from-emerald-800 to-emerald-700 hover:from-emerald-900 hover:to-emerald-800 text-white font-medium py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+                        >
+                            {loading ? (
+                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            ) : 'Sign In'}
+                        </button>
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-linear-to-r from-emerald-800 to-emerald-700 hover:from-emerald-900 hover:to-emerald-800 text-white font-medium py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed mt-2"
-                            >
-                                {loading ? (
-                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                ) : (
-                                    "Sign In"
-                                )}
-                            </button>
-
-                            <div className="flex flex-col items-center gap-1.5 pt-4">
-                                <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest">Powered by</p>
-                                <img src="/lifewood.png" alt="Lifewood" className="h-5 object-contain" />
-                            </div>
-                        </form>
-                    )}
+                        <div className="flex flex-col items-center gap-1.5 pt-4">
+                            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest">Powered by</p>
+                            <img src="/lifewood.png" alt="Lifewood" className="h-5 object-contain" />
+                        </div>
+                    </form>
                 </div>
 
                 <div className="flex-1" />
@@ -216,14 +116,11 @@ export default function Login() {
             {/* Right Side - Visual / Marketing */}
             <div className="hidden lg:flex lg:w-1/2 relative p-4">
                 <div className="w-full h-full rounded-3xl bg-emerald-950 overflow-hidden relative shadow-2xl flex flex-col justify-center items-center p-12">
-                    {/* Dark gradient blur background effect */}
                     <div className="absolute inset-0 bg-linear-to-br from-emerald-900 via-emerald-950 to-teal-950 opacity-90"></div>
 
-                    {/* Abstract blur circles for depth */}
                     <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-emerald-800 mix-blend-screen filter blur-[120px] opacity-30"></div>
                     <div className="absolute top-[40%] right-[10%] w-[50%] h-[50%] rounded-full bg-teal-800 mix-blend-screen filter blur-[100px] opacity-20"></div>
 
-                    {/* Content Container */}
                     <div className="relative z-10 w-full max-w-lg">
                         <h2 className="text-5xl font-serif italic text-emerald-50 leading-tight mb-2 tracking-wide font-light">
                             Enter<br />
@@ -233,7 +130,6 @@ export default function Login() {
                             of Analytics,<br />today
                         </h3>
 
-                        {/* Floating Interface Elements Mockup */}
                         <div className="mt-16 ml-auto mr-0 w-3/4 bg-emerald-50/95 backdrop-blur-md rounded-2xl p-6 shadow-2xl border border-white/20 relative -rotate-2 hover:rotate-0 transition-transform duration-500">
                             <div className="w-8 h-8 mb-8">
                                 <img src="/lifedata.png" alt="" className="w-full h-full object-contain opacity-60" />
@@ -247,12 +143,9 @@ export default function Login() {
                                     <p className="text-xs font-semibold text-gray-800">Primary Database</p>
                                     <p className="text-[10px] text-gray-400 tracking-widest mt-0.5">**** **** Data</p>
                                 </div>
-                                <div className="text-xs font-bold text-gray-800">
-                                    Active
-                                </div>
+                                <div className="text-xs font-bold text-gray-800">Active</div>
                             </div>
 
-                            {/* Little floating sidebar mock */}
                             <div className="absolute -left-16 bottom-0 w-12 bg-white rounded-xl shadow-xl flex flex-col items-center py-4 gap-4 border border-white/40">
                                 <div className="w-4 h-4 rounded-full bg-emerald-800"></div>
                                 <div className="w-4 h-4 grid grid-cols-2 gap-0.5 opacity-30">
